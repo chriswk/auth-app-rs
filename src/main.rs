@@ -72,7 +72,11 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .route(
                 "/healthz",
-                web::get().to(|| async { HttpResponse::Ok().finish() }),
+                web::get().to(|| async {
+                    HttpResponse::Ok()
+                        .content_type(ContentType::json())
+                        .body(r#"{ "status": "OK" }"#)
+                }),
             )
             .route(
                 "/version",
