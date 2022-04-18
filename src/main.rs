@@ -1,15 +1,27 @@
 use actix_web::{
-    http::header::ContentType, web, App, HttpResponse, HttpResponseBuilder, HttpServer,
+    App, http::header::ContentType, HttpResponse, HttpServer, web,
 };
-use config::Config;
 use serde::{Deserialize, Serialize};
 use shadow_rs::shadow;
+use sqlx::postgres::PgPoolOptions;
+use clap::Parser;
 
 shadow!(build);
 
-#[derive(Debug, Default, Deserialize, PartialEq)]
+#[derive(Debug, Default, Deserialize, PartialEq, Parser)]
+#[clap(author, version, about, long_about = None)]
 struct AppConfig {
+    #[clap(short, long, env, default_value_t = 1500, parse(try_from_str))]
     port: u16,
+    #[clap(short, long, env)]
+    database_url: String,
+    #[clap(short = 'm', long, default_value_t = 2, parse(try_from_str))]
+    database_max_connections: u32,
+    #[clap(short, long, default_value_t = String::from("development"))]
+    run_mode: String,
+
+    #[clap(short, long, env)]
+    secret: String
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -57,19 +69,21 @@ fn get_version_info() -> VersionInfo {
     }
 }
 
+
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let config = Config::builder()
-        .add_source(
-            config::Environment::default()
-                .try_parsing(true)
-                .list_separator(" "),
-        )
-        .add_source(config::File::with_name("AuthApp"))
-        .build();
-
-    HttpServer::new(|| {
+    dotenv::dotenv().ok();
+    let app_config = AppConfig::parse();
+    let pool = PgPoolOptions::new()
+        .max_connections(app_config.database_max_connections)
+        .connect(app_config.database_url.as_str())
+        .await
+        .expect("Couldn't connect to database");
+    sqlx::migrate!().run(&pool).await.expect("Failed to migrate");
+    HttpServer::new(move || {
         App::new()
+            .app_data(web::Data::new(pool.clone()))
             .route(
                 "/healthz",
                 web::get().to(|| async {
@@ -79,7 +93,7 @@ async fn main() -> std::io::Result<()> {
                 }),
             )
             .route(
-                "/version",
+                "/internal-backstage/version",
                 web::get().to(|| async {
                     HttpResponse::Ok()
                         .content_type(ContentType::json())
@@ -87,7 +101,7 @@ async fn main() -> std::io::Result<()> {
                 }),
             )
     })
-    .bind(("0.0.0.0", 1500))?
+    .bind(("0.0.0.0", app_config.port))?
     .run()
     .await
 }
