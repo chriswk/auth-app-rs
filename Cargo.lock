@@ -182,6 +182,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "actix-web-prom"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9df3127d20a5d01c9fc9aceb969a38d31a6767e1b48a54d55a8f56c769a84923"
+dependencies = [
+ "actix-web",
+ "futures-core",
+ "pin-project-lite",
+ "prometheus",
+]
+
+[[package]]
 name = "adler"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -266,6 +278,7 @@ version = "0.1.0"
 dependencies = [
  "actix-service",
  "actix-web",
+ "actix-web-prom",
  "anyhow",
  "chrono",
  "clap",

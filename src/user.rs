@@ -4,7 +4,7 @@ use crate::{password, AppConfig};
 use actix_web::{get, post, web, Error, HttpResponse};
 use sqlx::{Pool, Postgres};
 
-#[get("/admin/users")]
+#[get("/")]
 async fn list_users(pool: web::Data<Pool<Postgres>>) -> Result<HttpResponse, Error> {
     let users = sqlx::query_as!(UserListItem, "SELECT email, created_at FROM users")
         .fetch_all(pool.as_ref())
@@ -13,7 +13,7 @@ async fn list_users(pool: web::Data<Pool<Postgres>>) -> Result<HttpResponse, Err
     Ok(HttpResponse::Ok().json(users))
 }
 
-#[post("/admin/users")]
+#[post("/")]
 async fn create_user(
     create_user_request: web::Json<CreateUserRequest>,
     pool: web::Data<Pool<Postgres>>,
@@ -56,12 +56,13 @@ mod tests {
         test, web, App,
     };
     use sqlx::postgres::PgPoolOptions;
+    use sqlx::PgPool;
+    use std::future::Future;
+    use testcontainers::clients::Cli;
     use testcontainers::core::WaitFor;
     use testcontainers::{clients, images::generic, images::postgres};
 
-    #[actix_web::test]
-    async fn list_users_ok() {
-        let docker = clients::Cli::default();
+    async fn migrate_db(docker: &Cli) -> Pool<Postgres> {
         let postgres = docker.run(
             generic::GenericImage::new("postgres", "14-alpine")
                 .with_wait_for(WaitFor::message_on_stderr(
@@ -85,6 +86,13 @@ mod tests {
             .run(&pg)
             .await
             .expect("Should be able to perform migration");
+        pg
+    }
+
+    #[actix_web::test]
+    async fn list_users_ok() {
+        let client = clients::Cli::default();
+        let pg = migrate_db(&client).await;
         let app = test::init_service(
             App::new()
                 .app_data(web::Data::new(pg.clone()))
@@ -100,36 +108,14 @@ mod tests {
         )
         .await;
 
-        let req = test::TestRequest::get().uri("/admin/users").to_request();
+        let req = test::TestRequest::get().uri("/").to_request();
         let resp: Vec<UserListItem> = test::call_and_read_body_json(&app, req).await;
         assert_eq!(resp.len(), 0);
     }
     #[actix_web::test]
     async fn can_add_user() {
-        let docker = clients::Cli::default();
-        let postgres = docker.run(
-            generic::GenericImage::new("postgres", "14-alpine")
-                .with_wait_for(WaitFor::message_on_stderr(
-                    "database system is ready to accept connections",
-                ))
-                .with_env_var("POSTGRES_DB", "authapp")
-                .with_env_var("POSTGRES_PASSWORD", "example")
-                .with_env_var("POSTGRES_HOST_AUTH_METHOD", "trust")
-                .with_env_var("POSTGRES_USER", "test"),
-        );
-        let url = format!(
-            "postgres://test:example@localhost:{}/authapp",
-            postgres.get_host_port(5432)
-        );
-        let pg = PgPoolOptions::new()
-            .max_connections(1)
-            .connect(url.clone().as_str())
-            .await
-            .expect("Should be able to connect to test database");
-        sqlx::migrate!()
-            .run(&pg)
-            .await
-            .expect("Should be able to perform migration");
+        let client = clients::Cli::default();
+        let pg = migrate_db(&client).await;
         let app = test::init_service(
             App::new()
                 .app_data(web::Data::new(pg.clone()))
@@ -145,7 +131,7 @@ mod tests {
         )
         .await;
         let create_user_req = test::TestRequest::post()
-            .uri("/admin/users")
+            .uri("/")
             .set_json(CreateUserRequest {
                 email: String::from("test@test.com"),
             })
@@ -153,37 +139,15 @@ mod tests {
         let create_user_res = test::call_service(&app, create_user_req).await;
         assert_eq!(create_user_res.status(), StatusCode::CREATED);
 
-        let req = test::TestRequest::get().uri("/admin/users").to_request();
+        let req = test::TestRequest::get().uri("/").to_request();
         let resp: Vec<UserListItem> = test::call_and_read_body_json(&app, req).await;
         assert_eq!(resp.len(), 1);
     }
 
     #[actix_web::test]
     async fn adding_two_users_with_same_email_yields_conflict() {
-        let docker = clients::Cli::default();
-        let postgres = docker.run(
-            generic::GenericImage::new("postgres", "14-alpine")
-                .with_wait_for(WaitFor::message_on_stderr(
-                    "database system is ready to accept connections",
-                ))
-                .with_env_var("POSTGRES_DB", "authapp")
-                .with_env_var("POSTGRES_PASSWORD", "example")
-                .with_env_var("POSTGRES_HOST_AUTH_METHOD", "trust")
-                .with_env_var("POSTGRES_USER", "test"),
-        );
-        let url = format!(
-            "postgres://test:example@localhost:{}/authapp",
-            postgres.get_host_port(5432)
-        );
-        let pg = PgPoolOptions::new()
-            .max_connections(1)
-            .connect(url.clone().as_str())
-            .await
-            .expect("Should be able to connect to test database");
-        sqlx::migrate!()
-            .run(&pg)
-            .await
-            .expect("Should be able to perform migration");
+        let client = clients::Cli::default();
+        let pg = migrate_db(&client).await;
         let app = test::init_service(
             App::new()
                 .app_data(web::Data::new(pg.clone()))
@@ -199,7 +163,7 @@ mod tests {
         )
         .await;
         let create_user_req = test::TestRequest::post()
-            .uri("/admin/users")
+            .uri("/")
             .set_json(CreateUserRequest {
                 email: String::from("test@test.com"),
             })
@@ -208,7 +172,7 @@ mod tests {
         assert_eq!(create_user_res.status(), StatusCode::CREATED);
 
         let duplicate_user_req = test::TestRequest::post()
-            .uri("/admin/users")
+            .uri("/")
             .set_json(CreateUserRequest {
                 email: String::from("test@test.com"),
             })
@@ -216,7 +180,7 @@ mod tests {
         let create_user_res = test::call_service(&app, duplicate_user_req).await;
         assert_eq!(create_user_res.status(), StatusCode::CONFLICT);
 
-        let req = test::TestRequest::get().uri("/admin/users").to_request();
+        let req = test::TestRequest::get().uri("/").to_request();
         let resp: Vec<UserListItem> = test::call_and_read_body_json(&app, req).await;
         assert_eq!(resp.len(), 1);
     }

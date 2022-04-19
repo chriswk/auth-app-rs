@@ -1,15 +1,15 @@
+mod errors;
 mod model;
 mod password;
 mod user;
-mod errors;
-use actix_web::{
-    App, http::header::ContentType, HttpResponse, HttpServer, web,
-};
+
+use actix_web::{http::header::ContentType, web, App, HttpResponse, HttpServer};
+use actix_web_prom::{PrometheusMetricsBuilder, PrometheusMetricsMiddleware};
+use clap::Parser;
 use serde::{Deserialize, Serialize};
 use shadow_rs::shadow;
 use sqlx::postgres::PgPoolOptions;
-use clap::Parser;
-
+use std::collections::HashMap;
 
 shadow!(build);
 
@@ -26,7 +26,7 @@ struct AppConfig {
     run_mode: String,
 
     #[clap(short, long, env)]
-    secret: String
+    secret: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -74,8 +74,6 @@ fn get_version_info() -> VersionInfo {
     }
 }
 
-
-
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
@@ -86,11 +84,21 @@ async fn main() -> std::io::Result<()> {
         .connect(app_config.database_url.as_str())
         .await
         .expect("Couldn't connect to database");
-    sqlx::migrate!().run(&pool).await.expect("Failed to migrate");
+    sqlx::migrate!()
+        .run(&pool)
+        .await
+        .expect("Failed to migrate");
+    let labels = HashMap::<String, String>::new();
+    let metrics = PrometheusMetricsBuilder::new("authapp")
+        .endpoint("/internal-backstage/metrics")
+        .const_labels(labels)
+        .build()
+        .unwrap();
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(app_config.clone()))
             .app_data(web::Data::new(pool.clone()))
+            .wrap(metrics.clone())
             .route(
                 "/healthz",
                 web::get().to(|| async {
