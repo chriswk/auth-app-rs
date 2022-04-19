@@ -6,15 +6,18 @@ build = "build.rs"
 [dependencies]
 actix-service = "2.0.2"
 actix-web = "4.0.1"
-anyhow = "1.0.56"
+anyhow = { version = "1.0.56", features = ["std"] }
 clap = { version = "3.1.9", features = ["derive", "env"] }
+chrono = { version = "0.4.19", features = ["serde"] }
+derive_more = "0.99.17"
 dotenv = "0.15.0"
+passwords = "3.1.9"
 prometheus = "0.13.0"
 rust-argon2 = "1.0.0"
 serde = {version = "1.0.136", features = ["derive"]}
 serde_json = "1.0.79"
 shadow-rs = "0.11.0"
-sqlx = { version = "0.5.13", features = ["runtime-actix-rustls", "postgres"]}
+sqlx = { version = "0.5.13", features = ["runtime-actix-rustls", "postgres", "time", "json", "chrono"]}
 
 [build-dependencies]
 shadow-rs = "0.11.0"

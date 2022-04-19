@@ -1,3 +1,7 @@
+mod model;
+mod password;
+mod user;
+mod errors;
 use actix_web::{
     App, http::header::ContentType, HttpResponse, HttpServer, web,
 };
@@ -6,9 +10,10 @@ use shadow_rs::shadow;
 use sqlx::postgres::PgPoolOptions;
 use clap::Parser;
 
+
 shadow!(build);
 
-#[derive(Debug, Default, Deserialize, PartialEq, Parser)]
+#[derive(Debug, Default, Deserialize, PartialEq, Parser, Clone)]
 #[clap(author, version, about, long_about = None)]
 struct AppConfig {
     #[clap(short, long, env, default_value_t = 1500, parse(try_from_str))]
@@ -75,6 +80,7 @@ fn get_version_info() -> VersionInfo {
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
     let app_config = AppConfig::parse();
+    let port_config = app_config.clone();
     let pool = PgPoolOptions::new()
         .max_connections(app_config.database_max_connections)
         .connect(app_config.database_url.as_str())
@@ -83,6 +89,7 @@ async fn main() -> std::io::Result<()> {
     sqlx::migrate!().run(&pool).await.expect("Failed to migrate");
     HttpServer::new(move || {
         App::new()
+            .app_data(web::Data::new(app_config.clone()))
             .app_data(web::Data::new(pool.clone()))
             .route(
                 "/healthz",
@@ -100,8 +107,9 @@ async fn main() -> std::io::Result<()> {
                         .body(serde_json::to_string(&get_version_info()).unwrap())
                 }),
             )
+            .service(web::scope("/admin/users").configure(user::configure_user_svc))
     })
-    .bind(("0.0.0.0", app_config.port))?
+    .bind(("0.0.0.0", port_config.port))?
     .run()
     .await
 }
