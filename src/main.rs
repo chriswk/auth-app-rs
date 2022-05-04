@@ -5,7 +5,7 @@ mod model;
 mod password;
 mod user;
 
-use actix_web::{http::header::ContentType, web, App, HttpResponse, HttpServer};
+use actix_web::{guard, http::header::ContentType, web, App, HttpResponse, HttpServer};
 use actix_web_prom::PrometheusMetricsBuilder;
 use clap::Parser;
 use serde::{Deserialize, Serialize};
@@ -19,19 +19,22 @@ shadow!(build);
 #[clap(author, version, about, long_about = None)]
 struct AppConfig {
     #[clap(short, long, env, default_value_t = 1500, parse(try_from_str))]
-    port: u16,
+    pub port: u16,
     #[clap(short, long, env)]
-    database_url: String,
+    pub database_url: String,
     #[clap(short = 'm', long, default_value_t = 2, parse(try_from_str))]
-    database_max_connections: u32,
+    pub database_max_connections: u32,
     #[clap(short, long, default_value_t = String::from("development"))]
-    run_mode: String,
+    pub run_mode: String,
 
     #[clap(short, long, env)]
-    secret: String,
+    pub secret: String,
+
+    #[clap(short = 'h', long)]
+    pub shared_secret: String,
 
     #[clap(short, long, env, default_value_t = String::from("app.unleash-hosted.com"))]
-    base_url: String,
+    pub base_url: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -99,7 +102,10 @@ async fn main() -> std::io::Result<()> {
         .const_labels(labels)
         .build()
         .unwrap();
+
     HttpServer::new(move || {
+        let shared_config = app_config.clone();
+        let shared_secret_guard = guard::Header("Authorization", shared_config.shared_secret);
         App::new()
             .app_data(web::Data::new(app_config.clone()))
             .app_data(web::Data::new(pool.clone()))
@@ -121,6 +127,11 @@ async fn main() -> std::io::Result<()> {
                 }),
             )
             .service(web::scope("/api/admin/users").configure(user::configure_user_svc))
+            .service(
+                web::scope("/api/instances")
+                    .guard(shared_secret_guard)
+                    .configure(controllers::instance_users::configure_instance_user_service),
+            )
             .service(
                 web::scope("/admin/instances")
                     .configure(controllers::instance::configure_instance_services),
