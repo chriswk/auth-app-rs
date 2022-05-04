@@ -102,6 +102,7 @@ mod tests {
                     database_max_connections: 1,
                     run_mode: "test".to_string(),
                     secret: "secret123".to_string(),
+                    base_url: "localhost:1500".to_string(),
                 }))
                 .service(create_user)
                 .service(list_users),
@@ -125,6 +126,7 @@ mod tests {
                     database_max_connections: 1,
                     run_mode: "test".to_string(),
                     secret: "secret123".to_string(),
+                    base_url: "localhost:1500".to_string(),
                 }))
                 .service(create_user)
                 .service(list_users),
@@ -157,6 +159,7 @@ mod tests {
                     database_max_connections: 1,
                     run_mode: "test".to_string(),
                     secret: "secret123".to_string(),
+                    base_url: "localhost:1500".to_string(),
                 }))
                 .service(create_user)
                 .service(list_users),

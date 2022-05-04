@@ -1,10 +1,12 @@
+mod auth;
+mod controllers;
 mod errors;
 mod model;
 mod password;
 mod user;
 
 use actix_web::{http::header::ContentType, web, App, HttpResponse, HttpServer};
-use actix_web_prom::{PrometheusMetricsBuilder, PrometheusMetricsMiddleware};
+use actix_web_prom::PrometheusMetricsBuilder;
 use clap::Parser;
 use serde::{Deserialize, Serialize};
 use shadow_rs::shadow;
@@ -27,6 +29,9 @@ struct AppConfig {
 
     #[clap(short, long, env)]
     secret: String,
+
+    #[clap(short, long, env, default_value_t = String::from("app.unleash-hosted.com"))]
+    base_url: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -90,7 +95,7 @@ async fn main() -> std::io::Result<()> {
         .expect("Failed to migrate");
     let labels = HashMap::<String, String>::new();
     let metrics = PrometheusMetricsBuilder::new("authapp")
-        .endpoint("/internal-backstage/metrics")
+        .endpoint("/metrics")
         .const_labels(labels)
         .build()
         .unwrap();
@@ -115,7 +120,11 @@ async fn main() -> std::io::Result<()> {
                         .body(serde_json::to_string(&get_version_info()).unwrap())
                 }),
             )
-            .service(web::scope("/admin/users").configure(user::configure_user_svc))
+            .service(web::scope("/api/admin/users").configure(user::configure_user_svc))
+            .service(
+                web::scope("/admin/instances")
+                    .configure(controllers::instance::configure_instance_services),
+            )
     })
     .bind(("0.0.0.0", port_config.port))?
     .run()
