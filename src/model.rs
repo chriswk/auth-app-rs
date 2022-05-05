@@ -96,12 +96,12 @@ mod tests {
     fn can_get_sign_in_url_from_base_url() {
         let blue = UserInstanceAccess {
             client_id: String::from("blue"),
-            region: Some(String::from("eu")),
+            region: String::from("eu"),
             email: String::from("some@some.com"),
             role: String::from("client"),
         };
         assert_eq!(
-            "https://app.unleash.hosted.com/blue",
+            "https://app.unleash-hosted.com/blue",
             blue.find_sign_in_url(String::from("app.unleash-hosted.com"))
                 .sign_in_url,
         )

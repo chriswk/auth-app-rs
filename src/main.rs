@@ -1,13 +1,9 @@
-mod auth;
-mod controllers;
-mod errors;
-mod model;
-mod password;
-mod user;
-
 use actix_web::{guard, http::header::ContentType, web, App, HttpResponse, HttpServer};
 use actix_web_prom::PrometheusMetricsBuilder;
 use clap::Parser;
+
+use actix_web::guard::Guard;
+use auth_app_rs::{controllers, AppConfig, GitInfo, PackageInfo, VersionInfo};
 use serde::{Deserialize, Serialize};
 use shadow_rs::shadow;
 use sqlx::postgres::PgPoolOptions;
@@ -15,54 +11,7 @@ use std::collections::HashMap;
 
 shadow!(build);
 
-#[derive(Debug, Default, Deserialize, PartialEq, Parser, Clone)]
-#[clap(author, version, about, long_about = None)]
-struct AppConfig {
-    #[clap(short, long, env, default_value_t = 1500, parse(try_from_str))]
-    pub port: u16,
-    #[clap(short, long, env)]
-    pub database_url: String,
-    #[clap(short = 'm', long, default_value_t = 2, parse(try_from_str))]
-    pub database_max_connections: u32,
-    #[clap(short, long, default_value_t = String::from("development"))]
-    pub run_mode: String,
-
-    #[clap(short, long, env)]
-    pub secret: String,
-
-    #[clap(short = 'h', long)]
-    pub shared_secret: String,
-
-    #[clap(short, long, env, default_value_t = String::from("app.unleash-hosted.com"))]
-    pub base_url: String,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-struct VersionInfo {
-    is_debug: bool,
-    is_release: bool,
-    package_info: PackageInfo,
-    git_info: GitInfo,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-struct PackageInfo {
-    version: String,
-    major: String,
-    minor: String,
-    patch: String,
-    pre: String,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-struct GitInfo {
-    branch: String,
-    is_clean: bool,
-    sha: String,
-    tag: String,
-}
-
-fn get_version_info() -> VersionInfo {
+fn get_version_info() -> auth_app_rs::VersionInfo {
     VersionInfo {
         is_debug: shadow_rs::is_debug(),
         is_release: shadow_rs::is_release(),
@@ -85,6 +34,7 @@ fn get_version_info() -> VersionInfo {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
+    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
     let app_config = AppConfig::parse();
     let port_config = app_config.clone();
     let pool = PgPoolOptions::new()
@@ -105,7 +55,15 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         let shared_config = app_config.clone();
-        let shared_secret_guard = guard::Header("Authorization", shared_config.shared_secret);
+        let shared_s = shared_config.shared_secret;
+        let shared_secret_guard =
+            guard::fn_guard(move |ctx| match ctx.head().headers().get("Authorization") {
+                Some(hv) => hv
+                    .to_str()
+                    .map(|f| f.to_string().eq(&shared_s))
+                    .unwrap_or(false),
+                None => false,
+            });
         App::new()
             .app_data(web::Data::new(app_config.clone()))
             .app_data(web::Data::new(pool.clone()))
@@ -126,7 +84,6 @@ async fn main() -> std::io::Result<()> {
                         .body(serde_json::to_string(&get_version_info()).unwrap())
                 }),
             )
-            .service(web::scope("/api/admin/users").configure(user::configure_user_svc))
             .service(
                 web::scope("/api/instances")
                     .guard(shared_secret_guard)

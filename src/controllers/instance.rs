@@ -3,6 +3,7 @@ use actix_web::http::StatusCode;
 use actix_web::{get, post, web, HttpResponse, HttpResponseBuilder};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use sqlx::postgres::PgQueryResult;
 use sqlx::{Pool, Postgres};
 
 use crate::errors::AuthAppError;
@@ -26,7 +27,7 @@ fn default_region() -> String {
     "eu".to_string()
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct NewInstanceBody {
     pub client_id: String,
     #[serde(default = "default_region")]
@@ -37,16 +38,15 @@ pub struct NewInstanceBody {
     pub email_domain: Option<String>,
 }
 
-#[post("")]
-async fn create_instance(
-    body: web::Json<NewInstanceBody>,
-    conn: web::Data<Pool<Postgres>>,
-) -> Result<HttpResponse, AuthAppError> {
-    let client_id = body.client_id.clone();
-    let plan = body.plan.clone();
-    let display_name = body.display_name.clone();
-    let email_domain = body.email_domain.clone();
-    let region = body.region.clone();
+pub async fn create_instance_db(
+    new_instance: NewInstanceBody,
+    conn: &Pool<Postgres>,
+) -> Result<PgQueryResult, AuthAppError> {
+    let client_id = new_instance.client_id.clone();
+    let plan = new_instance.plan.clone();
+    let display_name = new_instance.display_name.clone();
+    let email_domain = new_instance.email_domain.clone();
+    let region = new_instance.region.clone();
     sqlx::query!(
         r#"
          INSERT INTO
@@ -59,10 +59,17 @@ async fn create_instance(
         email_domain,
         region
     )
-    .execute(conn.as_ref())
+    .execute(conn)
     .await
-    .map_err(AuthAppError::SqlError)?;
+    .map_err(AuthAppError::SqlError)
+}
 
+#[post("")]
+async fn create_instance(
+    body: web::Json<NewInstanceBody>,
+    conn: web::Data<Pool<Postgres>>,
+) -> Result<HttpResponse, AuthAppError> {
+    create_instance_db(body.into_inner(), conn.as_ref()).await?;
     Ok(HttpResponse::Created().finish())
 }
 #[get("")]
