@@ -20,6 +20,8 @@ rust-argon2 = "1.0.0"
 serde = {version = "1.0.136", features = ["derive"]}
 serde_json = "1.0.79"
 shadow-rs = "0.11.0"
+strum = { version = "0.24.0", features = ["derive"]}
+strum_macros = { version = "0.24.0" }
 sqlx = { version = "0.5.13", features = ["runtime-actix-rustls", "postgres", "time", "json", "chrono"]}
 
 [build-dependencies]

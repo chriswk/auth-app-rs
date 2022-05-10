@@ -2,9 +2,8 @@ use actix_web::{guard, http::header::ContentType, web, App, HttpResponse, HttpSe
 use actix_web_prom::PrometheusMetricsBuilder;
 use clap::Parser;
 
-use actix_web::guard::Guard;
 use auth_app_rs::{controllers, AppConfig, GitInfo, PackageInfo, VersionInfo};
-use serde::{Deserialize, Serialize};
+
 use shadow_rs::shadow;
 use sqlx::postgres::PgPoolOptions;
 use std::collections::HashMap;

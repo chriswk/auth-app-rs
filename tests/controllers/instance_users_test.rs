@@ -44,16 +44,16 @@ async fn migrate_db(docker: &Cli) -> Pool<Postgres> {
 }
 
 #[actix_web::test]
+#[sqlx_database_tester::test(pool(variable = "default_migrated_pool"))]
 async fn can_add_single_user() {
-    let client = clients::Cli::default();
-    let pg: Pool<Postgres> = migrate_db(&client).await;
-    let app =
-        test::init_service(App::new().app_data(web::Data::new(pg.clone())).service(
-            web::scope("/").configure(
+    let app = test::init_service(
+        App::new()
+            .app_data(web::Data::new(&default_migrated_pool))
+            .service(web::scope("/").configure(
                 auth_app_rs::controllers::instance_users::configure_instance_user_service,
-            ),
-        ))
-        .await;
+            )),
+    )
+    .await;
     let req = test::TestRequest::post()
         .uri("/client1/add")
         .set_json(auth_app_rs::controllers::instance_users::NewUserBody {
@@ -126,7 +126,7 @@ async fn adding_same_user_to_different_client_is_ok() {
     .unwrap();
     let app =
         test::init_service(App::new().app_data(web::Data::new(pg.clone())).service(
-            web::scope("/").configure(
+            web::scope("").configure(
                 auth_app_rs::controllers::instance_users::configure_instance_user_service,
             ),
         ))

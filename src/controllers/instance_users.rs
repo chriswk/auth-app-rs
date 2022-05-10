@@ -1,9 +1,10 @@
-use crate::errors::AuthAppError;
-use actix_web::web::delete;
+use std::iter;
+
 use actix_web::{delete, post, web, HttpResponse};
 use serde::{Deserialize, Serialize};
 use sqlx::{Pool, Postgres};
-use std::iter;
+
+use crate::errors::AuthAppError;
 
 #[derive(Deserialize)]
 struct Client {
@@ -111,7 +112,7 @@ async fn sync_users(
     .execute(&mut tx)
     .await
     .map_err(AuthAppError::SqlError)?;
-    tx.commit();
+    tx.commit().await.map_err(AuthAppError::SqlError)?;
     Ok(HttpResponse::Accepted().finish())
 }
 
