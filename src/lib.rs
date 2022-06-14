@@ -1,4 +1,5 @@
 pub mod controllers;
+pub(crate) mod db;
 mod errors;
 mod model;
 pub mod version;

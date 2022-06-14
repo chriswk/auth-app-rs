@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use actix_web::{App, HttpServer};
 use actix_web_prom::PrometheusMetricsBuilder;
 use clap::Parser;
-use log::debug;
 
 use paperclip::actix::{
     web::{self},
@@ -70,6 +69,7 @@ async fn main() -> std::io::Result<()> {
                 web::scope("/internal-backstage")
                     .configure(controllers::internalbackstage::configure_internal_backstage),
             )
+            .service(web::scope("/api").configure(controllers::api::configure_api))
             .build()
     })
     .bind(("0.0.0.0", port_config.port))?
