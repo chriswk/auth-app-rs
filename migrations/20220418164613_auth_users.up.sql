@@ -1,4 +1,4 @@
-CREATE TABLE users (
+CREATE TABLE auth_users (
     email TEXT PRIMARY KEY NOT NULL,
     name TEXT,
     password_hash TEXT NOT NULL,

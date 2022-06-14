@@ -1,3 +1,3 @@
-pub mod auth;
-pub mod instance;
-pub mod instance_users;
+pub mod admin;
+pub mod api;
+pub mod internalbackstage;
