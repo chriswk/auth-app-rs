@@ -1,14 +1,15 @@
 use std::collections::HashMap;
 
-use actix_web::{App, HttpServer};
+use actix_web::{middleware, App, HttpServer};
 use actix_web_prom::PrometheusMetricsBuilder;
 use clap::Parser;
+use middleware::NormalizePath;
 
 use paperclip::actix::{
     web::{self},
     OpenApiExt,
 };
-use paperclip::v2::models::{DefaultApiRaw, Info};
+use paperclip::v2::models::{DefaultApiRaw, Info, Tag};
 use sqlx::postgres::PgPoolOptions;
 
 use auth_app_rs::version::get_version_info;
@@ -44,6 +45,11 @@ async fn main() -> std::io::Result<()> {
         contact: None,
         ..Default::default()
     };
+    spec.tags = vec![Tag {
+        name: "admin".to_string(),
+        description: Some("Admin operations".to_string()),
+        external_docs: None,
+    }];
     HttpServer::new(move || {
         /*        let shared_config = app_config.clone();
         let shared_s = shared_config.shared_secret;
@@ -58,6 +64,7 @@ async fn main() -> std::io::Result<()> {
                 None => false,
             });*/
         App::new()
+            .wrap(NormalizePath::trim())
             .app_data(web::Data::new(app_config.clone()))
             .app_data(web::Data::new(pool.clone()))
             .wrap_api_with_spec(spec.clone())

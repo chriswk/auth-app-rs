@@ -15,10 +15,23 @@ pub struct InstanceStatus {
     pub region: String,
 }
 
+#[derive(Serialize, Deserialize, Apiv2Schema)]
+pub struct CreateInstanceBody {
+    pub client_id: String,
+    pub plan: String,
+    pub region: String,
+    pub billing_center: String,
+    pub display_name: Option<String>,
+    pub email_domain: Option<String>,
+    pub stripe_customer_id: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Apiv2Schema, FromRow)]
 pub struct InstanceRow {
     pub billing_center: String,
     pub client_id: String,
     pub created_at: DateTime<Utc>,
+    pub updated_at: Option<DateTime<Utc>>,
     pub display_name: Option<String>,
     pub email_domain: Option<String>,
     pub instance_state: String,
