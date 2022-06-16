@@ -36,7 +36,6 @@ async fn extend_trial(
 }
 
 #[api_v2_operation]
-#[post("/create")]
 async fn create_instance(
     conn: web::Data<Pool<Postgres>>,
     body: Json<CreateInstanceBody>,
@@ -47,14 +46,16 @@ async fn create_instance(
 }
 
 #[api_v2_operation]
-#[get("")]
 async fn list_instances(conn: web::Data<Pool<Postgres>>) -> AuthAppResult<Vec<InstanceRow>> {
     db::instance::list_all(conn).await.map(Json)
 }
 
 pub fn configure_instances(cfg: &mut ServiceConfig) {
-    cfg.service(create_instance)
-        .service(list_instances)
-        .service(get_instance_status)
-        .service(extend_trial);
+    cfg.service(
+        web::resource("")
+            .route(web::get().to(list_instances))
+            .route(web::post().to(create_instance)),
+    )
+    .service(get_instance_status)
+    .service(extend_trial);
 }
