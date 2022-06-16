@@ -1,10 +1,11 @@
 pub mod controllers;
 pub(crate) mod db;
-mod errors;
-mod model;
+pub mod errors;
+pub mod model;
 pub mod version;
 use clap::Parser;
 use serde::Deserialize;
+use sqlx::{Pool, Postgres};
 
 #[derive(Debug, Default, Deserialize, PartialEq, Parser, Clone)]
 #[clap(author, version, about, long_about = None)]
@@ -26,4 +27,11 @@ pub struct AppConfig {
 
     #[clap(short, long, env, default_value_t = String::from("app.unleash-hosted.com"))]
     pub base_url: String,
+}
+
+pub async fn migrate_db(pool: Pool<Postgres>) {
+    sqlx::migrate!()
+        .run(&pool)
+        .await
+        .expect("Failed to migrate");
 }

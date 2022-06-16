@@ -1,1 +1,2 @@
-pub mod instance_users_test;
+#[cfg(test)]
+pub mod instance_test;

@@ -21,15 +21,12 @@ async fn main() -> std::io::Result<()> {
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("debug"));
     let app_config = AppConfig::parse();
     let port_config = app_config.clone();
-    let pool = PgPoolOptions::new()
-        .max_connections(app_config.database_max_connections)
+    let migration_pool = PgPoolOptions::new()
+        .max_connections(1)
         .connect(app_config.database_url.as_str())
         .await
         .expect("Couldn't connect to database");
-    sqlx::migrate!()
-        .run(&pool)
-        .await
-        .expect("Failed to migrate");
+    auth_app_rs::migrate_db(migration_pool).await;
     let labels = HashMap::<String, String>::new();
     let metrics = PrometheusMetricsBuilder::new("authapp")
         .endpoint("/internal-backstage/metrics")
@@ -50,6 +47,12 @@ async fn main() -> std::io::Result<()> {
         description: Some("Admin operations".to_string()),
         external_docs: None,
     }];
+    let pool = PgPoolOptions::new()
+        .max_connections(app_config.database_max_connections)
+        .connect(app_config.database_url.as_str())
+        .await
+        .expect("Couldn't connect to database");
+
     HttpServer::new(move || {
         /*        let shared_config = app_config.clone();
         let shared_s = shared_config.shared_secret;
