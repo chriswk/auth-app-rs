@@ -25,7 +25,7 @@ jobs:
         with:
           images: |
             ghcr.io/chriswk/auth-app
-          tags:
+          tags: |
             type=edge,branch=main
             type=semver,pattern={{ version }},event=tag
             type=semver,pattern={{ major.minor }},event=tag
