@@ -1,13 +1,12 @@
-use actix_web::body::to_bytes;
 use actix_web::test::read_body_json;
 use actix_web::{test, App};
-use auth_app_rs::model::instance::{InstanceRow, InstanceState};
+use auth_app_rs::model::instance::{CreateInstanceBody, InstanceRow, InstanceState};
 use awc::http::StatusCode;
 use paperclip::actix::web;
 use sqlx::postgres::PgPoolOptions;
 use testcontainers::clients;
 use testcontainers::core::WaitFor;
-use testcontainers::images::{generic, postgres};
+use testcontainers::images::generic;
 
 #[cfg(test)]
 #[actix_web::test]
@@ -46,13 +45,13 @@ async fn can_add_instance() {
     .await;
     let req = test::TestRequest::post()
         .uri("/api/instances")
-        .set_json(auth_app_rs::model::instance::CreateInstanceBody {
+        .set_json(CreateInstanceBody {
             client_id: "test_instance".to_string(),
             billing_center: "eu".to_string(),
             display_name: None,
             email_domain: None,
             region: "eu".to_string(),
-            plan: auth_app_rs::model::instance::InstanceState::Unassigned.to_string(),
+            plan: InstanceState::Unassigned.to_string(),
             stripe_customer_id: None,
         })
         .to_request();
@@ -95,7 +94,7 @@ async fn can_list_added_instances() {
     .await;
     let req = test::TestRequest::post()
         .uri("/api/instances")
-        .set_json(auth_app_rs::model::instance::CreateInstanceBody {
+        .set_json(CreateInstanceBody {
             client_id: "test_instance".to_string(),
             billing_center: "eu".to_string(),
             display_name: None,
@@ -146,3 +145,38 @@ async fn adding_existing_client_id_yields_conflict() {
         .connect(url.clone().as_str())
         .await
         .expect("Couldn't connect to database");
+    let req = test::TestRequest::post()
+        .uri("/api/instances")
+        .set_json(CreateInstanceBody {
+            client_id: "test_instance".to_string(),
+            billing_center: "eu".to_string(),
+            display_name: None,
+            email_domain: None,
+            region: "eu".to_string(),
+            plan: "pro".to_string(),
+            stripe_customer_id: None,
+        })
+        .to_request();
+    let app = test::init_service(
+        App::new()
+            .app_data(web::Data::new(test_pool))
+            .service(web::scope("/api").configure(auth_app_rs::controllers::api::configure_api)),
+    )
+    .await;
+    let res = test::call_service(&app, req).await;
+    assert_eq!(res.status(), StatusCode::CREATED);
+    let req = test::TestRequest::post()
+        .uri("/api/instances")
+        .set_json(CreateInstanceBody {
+            client_id: "test_instance".to_string(),
+            billing_center: "eu".to_string(),
+            display_name: None,
+            email_domain: None,
+            region: "eu".to_string(),
+            plan: "pro".to_string(),
+            stripe_customer_id: None,
+        })
+        .to_request();
+    let res = test::call_service(&app, req).await;
+    assert_eq!(res.status(), StatusCode::CONFLICT);
+}

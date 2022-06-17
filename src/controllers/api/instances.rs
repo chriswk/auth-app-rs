@@ -1,5 +1,5 @@
 use actix_web::web::Json;
-use paperclip::actix::{api_v2_operation, get, post, put, web, Apiv2Schema, CreatedJson};
+use paperclip::actix::{api_v2_operation, get, post, web, Apiv2Schema, CreatedJson};
 use paperclip_actix::web::ServiceConfig;
 use serde::{Deserialize, Serialize};
 use sqlx::{Pool, Postgres};
