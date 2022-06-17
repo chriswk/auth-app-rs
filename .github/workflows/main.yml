@@ -18,13 +18,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Docker meta
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v4
         id: meta
         with:
           images: |
             ghcr.io/chriswk/auth-app
           tags:
-            type=edge
+            type=ref,event=branch
             type=semver,pattern={{ version }},event=tag
             type=semver,pattern={{ major.minor }},event=tag
       - name: Build and push

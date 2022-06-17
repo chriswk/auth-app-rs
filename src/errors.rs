@@ -23,6 +23,7 @@ use paperclip::actix::api_v2_errors;
     description = "Internal Server Error",
 )]
 pub enum AuthAppError {
+    UserAlreadyHasAccess,
     SqlError(sqlx::Error),
 }
 impl std::error::Error for AuthAppError {}
@@ -45,6 +46,7 @@ impl ResponseError for AuthAppError {
                 },
                 _ => StatusCode::INTERNAL_SERVER_ERROR,
             },
+            AuthAppError::UserAlreadyHasAccess => StatusCode::CONFLICT,
         }
     }
 

@@ -1,12 +1,12 @@
 use actix_web::web::Json;
-use paperclip::actix::{api_v2_operation, get, post, web, Apiv2Schema, CreatedJson};
+use paperclip::actix::{api_v2_operation, web, Apiv2Schema, CreatedJson};
 use paperclip_actix::web::ServiceConfig;
 use serde::{Deserialize, Serialize};
 use sqlx::{Pool, Postgres};
 
 use crate::db;
-use crate::model::user::CreateUserBody;
-use crate::model::{AuthAppResult, CreatedAuthAppResult};
+use crate::model::user::{CreateUserBody, MinimalAuthUser};
+use crate::model::CreatedAuthAppResult;
 
 #[derive(Serialize, Deserialize, Apiv2Schema)]
 pub struct ClientIdPathInfo {
@@ -17,11 +17,10 @@ pub struct ClientIdPathInfo {
 async fn create_user(
     conn: web::Data<Pool<Postgres>>,
     body: Json<CreateUserBody>,
-) -> CreatedAuthAppResult<()> {
-    db::instance::create(conn, body.into_inner())
+) -> CreatedAuthAppResult<MinimalAuthUser> {
+    db::user::create(conn, body.into_inner())
         .await
         .map(CreatedJson)
-    Ok(())
 }
 
 pub fn configure_users(cfg: &mut ServiceConfig) {
