@@ -18,7 +18,7 @@ use auth_app_rs::{controllers, AppConfig};
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
-    env_logger::init_from_env(env_logger::Env::new().default_filter_or("debug"));
+    env_logger::init_from_env(env_logger::Env::new().default_filter_or("warn"));
     let app_config = AppConfig::parse();
     let port_config = app_config.clone();
     let migration_pool = PgPoolOptions::new()
