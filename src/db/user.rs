@@ -60,7 +60,7 @@ pub async fn create(
     create_request: CreateUserBody,
 ) -> Result<MinimalAuthUser, AuthAppError> {
     let user_already_has_access: bool = user_access_exists(
-        conn,
+        conn.clone(),
         create_request.client_id.clone(),
         create_request.email.clone(),
     )
@@ -68,7 +68,7 @@ pub async fn create(
     match user_already_has_access {
         true => Err(AuthAppError::UserAlreadyHasAccess),
         false => {
-            let user = create_user(conn, create_request.email.clone()).await?;
+            let user = create_user(conn.clone(), create_request.email.clone()).await?;
             let client_id = create_request.client_id.clone();
             let email = create_request.email.clone();
             let role = create_request.role.clone();
