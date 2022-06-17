@@ -26,7 +26,7 @@ jobs:
           images: |
             ghcr.io/chriswk/auth-app
           tags:
-            type=ref,event=branch
+            type=edge,branch=main
             type=semver,pattern={{ version }},event=tag
             type=semver,pattern={{ major.minor }},event=tag
       - name: Build and push
