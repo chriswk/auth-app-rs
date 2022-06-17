@@ -4,6 +4,7 @@ use paperclip::actix::CreatedJson;
 
 pub mod health;
 pub mod instance;
+pub mod user;
 pub mod version_info;
 
 pub type AuthAppResult<T> = Result<Json<T>, AuthAppError>;
