@@ -1,0 +1,317 @@
+{
+  "db": "PostgreSQL",
+  "0e805cf1a5753cf3e2c75a055304e338732154bfa7185749666fd45f5eb9132a": {
+    "describe": {
+      "columns": [
+        {
+          "name": "client_id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "plan",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "display_name",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 3,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "stripe_customer_id",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "email_domain",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "region",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "trial_expiry",
+          "ordinal": 7,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "trial_start",
+          "ordinal": 8,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "instance_state",
+          "ordinal": 9,
+          "type_info": "Text"
+        },
+        {
+          "name": "trial_extended",
+          "ordinal": 10,
+          "type_info": "Int4"
+        },
+        {
+          "name": "billing_center",
+          "ordinal": 11,
+          "type_info": "Text"
+        },
+        {
+          "name": "seats",
+          "ordinal": 12,
+          "type_info": "Int4"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 13,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        true,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "\n        SELECT * FROM instances;\n    "
+  },
+  "39e60f986c3ece4b44ecc89f6c41af6eacb9ba767ea4e8ab9c50c6fc2f093d84": {
+    "describe": {
+      "columns": [
+        {
+          "name": "client_id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "plan",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "display_name",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 3,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "stripe_customer_id",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "email_domain",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "region",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "trial_expiry",
+          "ordinal": 7,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "trial_start",
+          "ordinal": 8,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "instance_state",
+          "ordinal": 9,
+          "type_info": "Text"
+        },
+        {
+          "name": "trial_extended",
+          "ordinal": 10,
+          "type_info": "Int4"
+        },
+        {
+          "name": "billing_center",
+          "ordinal": 11,
+          "type_info": "Text"
+        },
+        {
+          "name": "seats",
+          "ordinal": 12,
+          "type_info": "Int4"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 13,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        true,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text",
+          "Text",
+          "Text",
+          "Text",
+          "Text",
+          "Int4",
+          "Text",
+          "Int4"
+        ]
+      }
+    },
+    "query": "\n        INSERT INTO \n            instances(client_id, display_name, email_domain, instance_state, plan, region, seats, billing_center, trial_extended)\n        VALUES \n            ($1, $2, $3, $4, $5, $6, $7, $8, $9) \n        RETURNING *;\n    "
+  },
+  "96296e7d6f70c9f7e18e2942201e00ae403a7406795e516ae4573a69a24cab94": {
+    "describe": {
+      "columns": [
+        {
+          "name": "plan",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "trial_expiry",
+          "ordinal": 1,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "trial_start",
+          "ordinal": 2,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "trial_extended",
+          "ordinal": 3,
+          "type_info": "Int4"
+        },
+        {
+          "name": "instance_state",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "billing_center",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "region",
+          "ordinal": 6,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n        SELECT \n         plan,\n         trial_expiry, \n         trial_start, \n         trial_extended,\n         instance_state, \n         billing_center, \n         region \n         FROM instances \n         WHERE client_id = $1;\n    "
+  },
+  "e868ee605390ae17774de2f63d80c69098b19832f65c70f89840fc14e360fa92": {
+    "describe": {
+      "columns": [
+        {
+          "name": "plan",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "trial_expiry",
+          "ordinal": 1,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "trial_start",
+          "ordinal": 2,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "trial_extended",
+          "ordinal": 3,
+          "type_info": "Int4"
+        },
+        {
+          "name": "instance_state",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "billing_center",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "region",
+          "ordinal": 6,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n        UPDATE instances SET trial_extended = trial_extended + 1,\n                trial_expiry = trial_expiry + INTERVAL '5 DAYS'\n                 WHERE client_id = $1 AND instance_state = 'Trial'\n        RETURNING plan, trial_expiry, trial_start, trial_extended, instance_state, billing_center, region \n    "
+  }
+}

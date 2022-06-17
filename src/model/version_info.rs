@@ -21,8 +21,5 @@ pub struct PackageInfo {
 
 #[derive(Serialize, Deserialize, Clone, Debug, Apiv2Schema)]
 pub struct GitInfo {
-    pub branch: String,
-    pub is_clean: bool,
     pub sha: String,
-    pub tag: String,
 }

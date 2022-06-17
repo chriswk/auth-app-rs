@@ -16,10 +16,7 @@ pub fn get_version_info() -> VersionInfo {
             pre: build::PKG_VERSION_PRE.to_string(),
         },
         git_info: GitInfo {
-            branch: shadow_rs::branch(),
-            is_clean: shadow_rs::git_clean(),
             sha: build::COMMIT_HASH.to_string(),
-            tag: shadow_rs::tag(),
         },
     }
 }
