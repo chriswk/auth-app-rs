@@ -3,11 +3,11 @@ FROM rust:1.60 as builder
 RUN USER=root cargo new --bin auth-app
 WORKDIR ./auth-app
 COPY ./Cargo.toml ./build.rs ./
+RUN cargo install sqlx-cli --no-default-features --features native-tls,postgres
 RUN cargo build --release
 RUN rm src/*.rs
 
 ADD . ./
-
 
 RUN cargo build --release
 
