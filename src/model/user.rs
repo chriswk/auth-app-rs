@@ -19,6 +19,22 @@ pub struct MinimalAuthUser {
     pub name: Option<String>,
 }
 
+#[derive(Serialize, Deserialize, Apiv2Schema)]
+pub struct DeleteUserRequest {
+    pub client_id: String,
+    pub email: String,
+}
+
+#[derive(Serialize, Deserialize, Apiv2Schema)]
+pub struct DeleteUserBody {
+    pub email: String,
+}
+
+#[derive(Serialize, Deserialize, Apiv2Schema)]
+pub struct SyncUserBody {
+    pub emails: Vec<String>,
+}
+
 pub fn default_user_role() -> String {
     Role::WRITER.to_string()
 }

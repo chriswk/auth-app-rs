@@ -1,5 +1,5 @@
 use crate::errors::AuthAppError;
-use crate::model::user::{CreateUserBody, MinimalAuthUser};
+use crate::model::user::{CreateUserBody, DeleteUserRequest, MinimalAuthUser};
 use actix_web::web::Data;
 use paperclip_actix::web;
 use passwords::PasswordGenerator;
@@ -17,6 +17,20 @@ fn generate_password() -> String {
         spaces: false,
     };
     gen.generate_one().unwrap()
+}
+
+fn generate_passwords(number_to_generate: usize) -> Vec<String> {
+    let gen = PasswordGenerator {
+        length: 32,
+        numbers: true,
+        lowercase_letters: true,
+        uppercase_letters: true,
+        symbols: true,
+        exclude_similar_characters: true,
+        strict: true,
+        spaces: false,
+    };
+    gen.generate(number_to_generate).unwrap()
 }
 
 pub async fn create_user(
@@ -86,4 +100,53 @@ pub async fn create(
             Ok(user)
         }
     }
+}
+
+pub async fn delete(
+    conn: Data<Pool<Postgres>>,
+    delete_request: DeleteUserRequest,
+) -> Result<(), AuthAppError> {
+    sqlx::query!(
+        "DELETE FROM user_access WHERE client_id = $1 AND email = $2",
+        delete_request.client_id.clone(),
+        delete_request.email.clone()
+    )
+    .execute(conn.as_ref())
+    .await
+    .map_err(AuthAppError::SqlError)
+    .map(|_| ())
+}
+
+pub async fn sync_users(
+    conn: Data<Pool<Postgres>>,
+    client_id: String,
+    emails: Vec<String>,
+) -> Result<(), AuthAppError> {
+    let client_ids = vec![client_id; emails.len()];
+    let passwords = generate_passwords(emails.len());
+    let mut tx = conn.as_ref().begin().await?;
+    sqlx::query(
+        r#"
+        INSERT INTO auth_users(email, password_hash)
+            SELECT client_id, password_hash FROM UNNEST($1, $2) AS a(client_id, password_hash)
+            ON CONFLICT DO NOTHING;
+    "#,
+    )
+    .bind(&client_ids)
+    .bind(&passwords)
+    .execute(&mut tx)
+    .await
+    .map_err(AuthAppError::SqlError)?;
+    sqlx::query(
+        r#"
+        INSERT INTO user_access(client_id, email, role)
+        SELECT client_id, email, 'writer' FROM
+        UNNEST($1, $2) AS a(client_id, email)"#,
+    )
+    .bind(&client_ids)
+    .bind(&emails)
+    .execute(&mut tx)
+    .await
+    .map_err(|e| AuthAppError::SqlError(e))
+    .map(|_| ())
 }
