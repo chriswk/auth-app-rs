@@ -1,11 +1,9 @@
 use crate::errors::AuthAppError;
 use crate::model::instance::{CreateInstanceBody, InstanceRow, InstanceState};
-use actix_web::web::Data;
-use paperclip_actix::web;
 use sqlx::{Pool, Postgres};
 
 pub async fn create(
-    conn: web::Data<Pool<Postgres>>,
+    conn: &Pool<Postgres>,
     create_request: CreateInstanceBody,
 ) -> Result<InstanceRow, AuthAppError> {
     let client_id = create_request.client_id.clone();
@@ -24,19 +22,35 @@ pub async fn create(
             ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
         RETURNING *;
     "#, client_id, display_name, email_domain, instance_state, plan, region, seats, billing_center, trial_extended)
-        .fetch_one(conn.as_ref())
+        .fetch_one(conn)
         .await
         .map_err(AuthAppError::SqlError)
 }
 
-pub(crate) async fn list_all(conn: Data<Pool<Postgres>>) -> Result<Vec<InstanceRow>, AuthAppError> {
+pub async fn get_instance_for_domain(
+    conn: &Pool<Postgres>,
+    domain: String,
+) -> Result<InstanceRow, AuthAppError> {
+    sqlx::query_as!(
+        InstanceRow,
+        r#"
+        SELECT * FROM instances WHERE email_domain = $1
+    "#,
+        domain
+    )
+    .fetch_one(conn)
+    .await
+    .map_err(AuthAppError::SqlError)
+}
+
+pub(crate) async fn list_all(conn: &Pool<Postgres>) -> Result<Vec<InstanceRow>, AuthAppError> {
     sqlx::query_as!(
         InstanceRow,
         r#"
         SELECT * FROM instances;
     "#
     )
-    .fetch_all(conn.as_ref())
+    .fetch_all(conn)
     .await
     .map_err(AuthAppError::SqlError)
 }

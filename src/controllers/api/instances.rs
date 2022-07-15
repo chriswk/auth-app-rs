@@ -40,14 +40,14 @@ async fn create_instance(
     conn: web::Data<Pool<Postgres>>,
     body: Json<CreateInstanceBody>,
 ) -> CreatedAuthAppResult<InstanceRow> {
-    db::instance::create(conn, body.into_inner())
+    db::instance::create(conn.as_ref(), body.into_inner())
         .await
         .map(CreatedJson)
 }
 
 #[api_v2_operation]
 async fn list_instances(conn: web::Data<Pool<Postgres>>) -> AuthAppResult<Vec<InstanceRow>> {
-    db::instance::list_all(conn).await.map(Json)
+    db::instance::list_all(conn.as_ref()).await.map(Json)
 }
 
 pub fn configure_instances(cfg: &mut ServiceConfig) {

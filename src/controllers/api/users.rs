@@ -21,7 +21,7 @@ async fn create_user(
     conn: Data<Pool<Postgres>>,
     body: Json<CreateUserBody>,
 ) -> CreatedAuthAppResult<MinimalAuthUser> {
-    db::user::create(conn, body.into_inner())
+    db::user::create(conn.as_ref(), body.into_inner())
         .await
         .map(CreatedJson)
 }
@@ -33,7 +33,7 @@ async fn remove_user(
     body: Json<DeleteUserBody>,
 ) -> AuthAppResult<()> {
     db::user::delete(
-        conn,
+        conn.as_ref(),
         DeleteUserRequest {
             client_id: client_id.client_id.clone(),
             email: body.email.clone(),
@@ -50,9 +50,13 @@ async fn sync_users(
     body: Json<SyncUserBody>,
 ) -> AuthAppResult<()> {
     warn!("Entered sync operation");
-    db::user::sync_users(conn, client_id.client_id.clone(), body.emails.clone())
-        .await
-        .map(Json)
+    db::user::sync_users(
+        conn.as_ref(),
+        client_id.client_id.clone(),
+        body.emails.clone(),
+    )
+    .await
+    .map(Json)
 }
 
 pub fn configure_users(cfg: &mut ServiceConfig) {

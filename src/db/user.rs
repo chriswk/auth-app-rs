@@ -1,7 +1,5 @@
 use crate::errors::AuthAppError;
 use crate::model::user::{CreateUserBody, DeleteUserRequest, MinimalAuthUser};
-use actix_web::web::Data;
-use paperclip_actix::web;
 use passwords::PasswordGenerator;
 use sqlx::{Pool, Postgres};
 
@@ -34,7 +32,7 @@ fn generate_passwords(number_to_generate: usize) -> Vec<String> {
 }
 
 pub async fn create_user(
-    conn: web::Data<Pool<Postgres>>,
+    conn: &Pool<Postgres>,
     email: String,
 ) -> Result<MinimalAuthUser, AuthAppError> {
     sqlx::query_as!(
@@ -45,13 +43,27 @@ pub async fn create_user(
         email,
         generate_password()
     )
-    .fetch_one(conn.as_ref())
+    .fetch_one(conn)
     .await
     .map_err(AuthAppError::SqlError)
 }
 
+pub async fn user_exists(conn: &Pool<Postgres>, email: String) -> Result<bool, AuthAppError> {
+    sqlx::query_as!(
+        crate::model::Exists,
+        r#"
+        SELECT EXISTS (SELECT 1 FROM auth_users WHERE email = $1) AS exists
+    "#,
+        email
+    )
+    .fetch_one(conn)
+    .await
+    .map(|e| e.exists.unwrap_or(false))
+    .map_err(AuthAppError::SqlError)
+}
+
 pub async fn user_access_exists(
-    conn: web::Data<Pool<Postgres>>,
+    conn: &Pool<Postgres>,
     client_id: String,
     email: String,
 ) -> Result<bool, AuthAppError> {
@@ -63,18 +75,18 @@ pub async fn user_access_exists(
         client_id,
         email
     )
-    .fetch_one(conn.as_ref())
+    .fetch_one(conn)
     .await
     .map(|e| e.exists.unwrap_or(false))
     .map_err(AuthAppError::SqlError)
 }
 
 pub async fn create(
-    conn: Data<Pool<Postgres>>,
+    conn: &Pool<Postgres>,
     create_request: CreateUserBody,
 ) -> Result<MinimalAuthUser, AuthAppError> {
     let user_already_has_access: bool = user_access_exists(
-        conn.clone(),
+        conn,
         create_request.client_id.clone(),
         create_request.email.clone(),
     )
@@ -82,7 +94,7 @@ pub async fn create(
     match user_already_has_access {
         true => Err(AuthAppError::UserAlreadyHasAccess),
         false => {
-            let user = create_user(conn.clone(), create_request.email.clone()).await?;
+            let user = create_user(conn, create_request.email.clone()).await?;
             let client_id = create_request.client_id.clone();
             let email = create_request.email.clone();
             let role = create_request.role.clone();
@@ -94,7 +106,7 @@ pub async fn create(
             .bind(client_id)
             .bind(email)
             .bind(role)
-            .execute(conn.as_ref())
+            .execute(conn)
             .await
             .map_err(AuthAppError::SqlError)?;
             Ok(user)
@@ -103,7 +115,7 @@ pub async fn create(
 }
 
 pub async fn delete(
-    conn: Data<Pool<Postgres>>,
+    conn: &Pool<Postgres>,
     delete_request: DeleteUserRequest,
 ) -> Result<(), AuthAppError> {
     sqlx::query!(
@@ -111,20 +123,34 @@ pub async fn delete(
         delete_request.client_id.clone(),
         delete_request.email.clone()
     )
-    .execute(conn.as_ref())
+    .execute(conn)
     .await
     .map_err(AuthAppError::SqlError)
     .map(|_| ())
 }
 
+pub async fn get_user(
+    conn: &Pool<Postgres>,
+    email: String,
+) -> Result<MinimalAuthUser, AuthAppError> {
+    sqlx::query_as!(
+        MinimalAuthUser,
+        "SELECT email, name FROM auth_users WHERE email = $1",
+        email
+    )
+    .fetch_one(conn)
+    .await
+    .map_err(AuthAppError::SqlError)
+}
+
 pub async fn sync_users(
-    conn: Data<Pool<Postgres>>,
+    conn: &Pool<Postgres>,
     client_id: String,
     emails: Vec<String>,
 ) -> Result<(), AuthAppError> {
     let client_ids = vec![client_id; emails.len()];
     let passwords = generate_passwords(emails.len());
-    let mut tx = conn.as_ref().begin().await?;
+    let mut tx = conn.begin().await?;
     sqlx::query(
         r#"
         INSERT INTO auth_users(email, password_hash)

@@ -3,7 +3,7 @@ use actix_web::body::BoxBody;
 use actix_web::http::StatusCode;
 use actix_web::{HttpResponse, ResponseError};
 use derive_more::{Display, From};
-use log::{debug, warn};
+use log::warn;
 use paperclip::actix::api_v2_errors;
 
 #[derive(Display, From, Debug)]
@@ -26,6 +26,9 @@ use paperclip::actix::api_v2_errors;
 pub enum AuthAppError {
     UserAlreadyHasAccess,
     SqlError(sqlx::Error),
+    DomainNotAllowed,
+    AccessNotAllowed,
+    InvalidToken,
 }
 impl std::error::Error for AuthAppError {}
 
@@ -50,6 +53,9 @@ impl ResponseError for AuthAppError {
                 _ => StatusCode::INTERNAL_SERVER_ERROR,
             },
             AuthAppError::UserAlreadyHasAccess => StatusCode::CONFLICT,
+            AuthAppError::DomainNotAllowed => StatusCode::UNAUTHORIZED,
+            AuthAppError::AccessNotAllowed => StatusCode::UNAUTHORIZED,
+            AuthAppError::InvalidToken => StatusCode::FORBIDDEN,
         }
     }
 

@@ -1,7 +1,9 @@
+pub mod auth;
 pub mod controllers;
 pub(crate) mod db;
 pub mod errors;
 pub mod model;
+pub mod service;
 pub mod version;
 use clap::Parser;
 use oauth2::basic::BasicClient;
@@ -21,7 +23,7 @@ pub struct AppConfig {
     #[clap(short, long, default_value_t = String::from("development"))]
     pub run_mode: String,
 
-    #[clap(short, long, env)]
+    #[clap(short, long, env, validator = validate_secret_length)]
     pub secret: String,
 
     #[clap(short = 'h', long)]
@@ -60,6 +62,15 @@ pub struct AppState {
     pub scope_url: Url,
 }
 
+fn validate_secret_length(secret: &str) -> Result<(), String> {
+    if secret.len() == 32 {
+        Ok(())
+    } else {
+        Err(String::from(
+            "The secret must be exactly 32 characters long",
+        ))
+    }
+}
 pub async fn migrate_db(pool: Pool<Postgres>) {
     sqlx::migrate!()
         .run(&pool)

@@ -1,5 +1,4 @@
-use crate::AppState;
-use actix_session::Session;
+use crate::{service, AppState};
 use actix_web::http::header;
 use actix_web::HttpResponse;
 use oauth2::http::{HeaderMap, HeaderValue, Method};
@@ -11,11 +10,12 @@ use oauth2::{
 };
 use paperclip::actix::web::ServiceConfig;
 use paperclip::actix::{api_v2_operation, get, post, web, Apiv2Schema, CreatedJson};
-use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::sync::Mutex;
 
+use crate::errors::AuthAppError;
 use serde::{Deserialize, Serialize};
+use sqlx::{Pool, Postgres};
 
 #[api_v2_operation]
 async fn login(
@@ -44,8 +44,8 @@ async fn login(
         .finish()
 }
 
-async fn logout(session: Session) -> HttpResponse {
-    session.remove("login");
+#[api_v2_operation]
+async fn logout() -> HttpResponse {
     HttpResponse::Found()
         .append_header((header::LOCATION, "/".to_string()))
         .finish()
@@ -77,8 +77,16 @@ fn build_user_info_request(scope_url: Url, access_token: &AccessToken) -> HttpRe
     }
 }
 
+fn get_auth_info(url: Url, access_token: &AccessToken) -> Result<AuthInfo, AuthAppError> {
+    let req = build_user_info_request(url.clone(), access_token);
+    http_client(req)
+        .map(|r| serde_json::from_slice(r.body.as_slice()).unwrap())
+        .map_err(|_| AuthAppError::AccessNotAllowed)
+}
+
 #[api_v2_operation]
 async fn callback(
+    conn: web::Data<Pool<Postgres>>,
     data: web::Data<AppState>,
     params: web::Query<AuthRequest>,
     code_verifiers: web::Data<Mutex<HashMap<String, String>>>,
@@ -98,11 +106,14 @@ async fn callback(
                 .request(http_client);
             match token {
                 Ok(btr) => {
-                    let user_info_req =
-                        build_user_info_request(data.scope_url.clone(), btr.access_token());
-                    let response = http_client(user_info_req).expect("failed").body;
-                    let auth_info: AuthInfo = serde_json::from_slice(response.as_slice()).unwrap();
-                    println!("{:#?}", auth_info);
+                    let auth_info = get_auth_info(data.scope_url.clone(), btr.access_token());
+                    match auth_info {
+                        Ok(auth) => {
+                            let auth_app_user =
+                                service::user::get_or_create_user(conn.as_ref(), auth.email).await;
+                        }
+                        Err(_) => (),
+                    }
                 }
                 Err(e) => println!("You're a muppet Harry, {:#?}", e),
             }
@@ -118,4 +129,5 @@ async fn callback(
 pub fn configure_google_auth(cfg: &mut ServiceConfig) {
     cfg.service(web::resource("/login").route(web::get().to(login)));
     cfg.service(web::resource("/callback").route(web::get().to(callback)));
+    cfg.service(web::resource("/logout").route(web::get().to(logout)));
 }

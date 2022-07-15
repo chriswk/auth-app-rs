@@ -2,14 +2,12 @@ use std::collections::HashMap;
 use std::sync::Mutex;
 
 use actix_web::{middleware, App, HttpServer};
-use actix_web_httpauth::middleware::HttpAuthentication;
 use actix_web_prom::PrometheusMetricsBuilder;
 use clap::Parser;
 use middleware::NormalizePath;
 use oauth2::basic::BasicClient;
 use oauth2::url::Url;
-use oauth2::{AuthUrl, ClientId, ClientSecret, CsrfToken, PkceCodeVerifier, RedirectUrl, TokenUrl};
-
+use oauth2::{AuthUrl, ClientId, ClientSecret, RedirectUrl, TokenUrl};
 use paperclip::actix::{
     web::{self},
     OpenApiExt,
