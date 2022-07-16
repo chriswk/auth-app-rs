@@ -1,0 +1,36 @@
+<p>
+    <h2>Update API key</h2>
+    <a href="/admin/instances">List instances</a>
+</p>
+
+<hr>
+<h2>Create new instance key</h2>
+<p>this will replace all existing keys</p>
+<div class="row">
+    <div class="col-md-6">
+        <form method="post" action="/admin/instances/{{clientId}}/new-api-key">
+        <div class="form-group">
+            <label for="displayName">API Key</label>
+            <input class="form-control" id="displayName" name="apiKey" value="{{apiKey}}" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Replace</button>
+        </form>
+    </div>
+</div>
+
+or
+
+<hr>
+<h2>Add new instance key</h2>
+<p>this will add an extra key to the instance</p>
+<div class="row">
+    <div class="col-md-6">
+        <form method="post" action="/admin/instances/{{clientId}}/add-api-key">
+        <div class="form-group">
+            <label for="displayName">API Key</label>
+            <input class="form-control" id="displayName" name="apiKey" value="{{apiKey}}" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Add key</button>
+        </form>
+    </div>
+</div>

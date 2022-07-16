@@ -1,0 +1,16 @@
+<br />
+{{#if instanceInfo}}
+    <h1>
+      {{instanceInfo.meta.displayName}}
+      <a href="{{instanceInfo.instanceUrl}}/login" title="Open instance" style="font-size: 0.5em" target="_blank"><i class="fa fa-link"></i></a>
+      {{#if isAdmin}}
+        <a href="/admin/instances/{{clientId}}/edit" title="Edit instance" style="font-size: 0.5em"><i class="fa fa-edit"></i></a>
+      {{/if}}
+    </h1>
+    <span>Current plan is <strong>{{instanceInfo.meta.plan}}</strong></span><br />
+{{else}}
+    <h1>{{clientId}}</h1>
+{{/if}}
+<span>API url is <strong><pre style="display: inline;">{{instanceInfo.instanceUrl}}/api/</pre></strong></span>
+<br />
+<br />

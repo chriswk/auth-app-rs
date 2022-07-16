@@ -29,6 +29,9 @@ pub enum AuthAppError {
     DomainNotAllowed,
     AccessNotAllowed,
     InvalidToken,
+    InvalidCookieDuration,
+    TokenExpired,
+    RenderError,
 }
 impl std::error::Error for AuthAppError {}
 
@@ -56,6 +59,9 @@ impl ResponseError for AuthAppError {
             AuthAppError::DomainNotAllowed => StatusCode::UNAUTHORIZED,
             AuthAppError::AccessNotAllowed => StatusCode::UNAUTHORIZED,
             AuthAppError::InvalidToken => StatusCode::FORBIDDEN,
+            AuthAppError::InvalidCookieDuration => StatusCode::BAD_REQUEST,
+            AuthAppError::TokenExpired => StatusCode::UNAUTHORIZED,
+            AuthAppError::RenderError => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 

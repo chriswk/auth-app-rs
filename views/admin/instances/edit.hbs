@@ -1,0 +1,66 @@
+<p>
+<h2>Edit instance</h2>
+<a href="/admin/instances">List instances</a>
+</p>
+
+<hr>
+<div class="row">
+    <div class="col-md-6">
+        <form method="post" action="/admin/instances/{{instance.clientId}}/edit">
+            <div class="form-group">
+                <label for="displayName">Display Name</label>
+                <input class="form-control" id="displayName" name="displayName" value="{{instance.displayName}}"
+                       required>
+            </div>
+            <div class="form-group">
+                <label for="displayName">Stripe Customer ID</label>
+                <input class="form-control" id="stripeCustomerId" name="stripeCustomerId"
+                       value="{{instance.stripeCustomerId}}">
+            </div>
+            <div class="form-group">
+                <label for="displayName">Auto Create users for Email Domain</label>
+                <input class="form-control" id="emailDomain" name="emailDomain" value="{{instance.emailDomain}}">
+            </div>
+          <div class="form-group">
+                <label for="plan">Plan</label>
+                <select class="form-control" id="plan" name="plan" required>
+                    <option {{#eq instance.plan "Solo"}}selected{{/eq}}>Solo</option>
+                    <option {{#eq instance.plan "Team"}}selected{{/eq}}>Team</option>
+                    <option {{#eq instance.plan "Company"}}selected{{/eq}}>Company</option>
+                    <option {{#eq instance.plan "Pro"}}selected{{/eq}}>Pro</option>
+                    <option {{#eq instance.plan "Starter"}}selected{{/eq}}>Starter</option>
+                    <option {{#eq instance.plan "Professional"}}selected{{/eq}}>Professional</option>
+                    <option {{#eq instance.plan "Enterprise"}}selected{{/eq}}>Enterprise</option>
+                </select>
+            </div>    
+            <div class="form-group">
+                <label for="state">Instance state</label>
+                <select class="form-control" id="state" name="state" required>
+                    <option {{#eq instance.state "UNASSIGNED"}}selected{{/eq}}>UNASSIGNED</option>
+                    <option {{#eq instance.state "ACTIVE"}}selected{{/eq}}>ACTIVE</option>
+                    <option {{#eq instance.state "TRIAL"}}selected{{/eq}}>TRIAL</option>
+                    <option {{#eq instance.state "EXPIRED"}}selected{{/eq}}>EXPIRED</option>
+                    <option {{#eq instance.state "CHURNED"}}selected{{/eq}}>CHURNED</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="region">Region</label>
+                <select class="form-control" id="region" name="region" required>
+                    <option {{#eq instance.region "eu"}}selected{{/eq}}>eu</option>
+                    <option {{#eq instance.region "eu2"}}selected{{/eq}}>eu2</option>
+                    <option {{#eq instance.region "us"}}selected{{/eq}}>us</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="seats">Seats</label>
+                <input class="form-control" type="number" min="5" value="{{instance.seats}}" name="seats" id="seats" />
+            </div>
+            <div class="form-group">
+                <label for="trialExpiry">Trial Expiry Date</label>
+                <input class="form-control" type="date" value="{{instance.expiryDate}}" name="trialExpiry" id="trialExpiry" />
+            </div>
+            <br />
+            <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,43 @@
+{{> instance-header }}
+
+<h3>Invoices</h3>
+
+
+{{#if invoices}}
+
+{{#if showCustomerPortal}}
+  <a href="/admin/{{clientId}}/portal">Open billing portal <i class="fa fa-external-link-alt"></i></a>
+{{/if}}
+<br />
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col" class="text-right">Amount</th>
+      <th class="text-center" scope="col">Status</th>
+      <th class="text-center" scope="col">Due date</th>
+      <th scope="col">PDF</th>
+      <th scope="col">Link</th>
+    </tr>
+  </thead>
+  <tbody>
+      {{#each invoices}}
+        <tr class="status-{{status}}">
+            <td class="text-right">{{amountFomratted}}</td>
+            <td class="text-center">{{status}}</td>
+            <td class="text-center">
+                {{#if dueDate}}
+                  {{> local-time dueDate}}
+                {{else}}
+                  -
+                {{/if}}
+              </td>
+            <td><a href="{{invoicePDF}}">PDF</a></td>
+            <td><a href="{{invoiceURL}}" target="_blank">Payment link</a></td>
+        </tr>
+    {{/each}}
+</table>
+{{else}}
+ <div class="alert alert-danger" role="alert">
+   Could not find any invoices.
+ </div>
+{{/if}}

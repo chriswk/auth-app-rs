@@ -1,0 +1,27 @@
+<p>
+<h2>Unleash-hosted Settings</h2>
+<a href="/admin/settings/create">Create new setting</a> -
+<a href="/admin/settings">All</a> -
+</p>
+<table class="table table-striped">
+  <thead>
+  <tr>
+    <th scope="col">Setting name</th>
+    <th scope="col">Setting value</th>
+  </tr>
+  </thead>
+  <tbody>
+  {{#each settings}}
+    <tr>
+      <th scope="row"><a href="/admin/settings/{{name}}/edit">{{name}}</a></th>
+      <td>
+        {{configAsString}}
+      </td>
+      <td>
+      <td class="text-right">
+        <a href="/admin/settings/{{name}}/edit" title="Edit"><i class="fa fa-edit"></i></a>&nbsp;
+        <a href="/admin/settings/{{name}}/delete" title="Delete"><i class="fa fa-trash"></i></a>
+      </td>
+    </tr>
+  {{/each}}
+</table>

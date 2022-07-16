@@ -1,0 +1,25 @@
+{{#if msg}}
+    <div class="alert alert-warning" role="alert">
+        {{msg}}
+    </div>
+{{else}}
+    <div class="alert alert-success" role="alert">
+        You are logged in as {{user.email}}. 
+    </div>
+{{/if}}
+
+
+<div class="text-left">
+<p>
+    You have access to multiple Unleash instances. 
+    <br /><br />
+    Please select the instance you want to continue with:
+</p>
+
+<ul>
+    {{#each user.access}}
+        <li><a href="{{url}}">{{name}}</a></li>
+    {{/each}}
+</ul>
+
+</div>

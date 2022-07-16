@@ -1,0 +1,29 @@
+<p>
+    <h2>Assign instance</h2>
+    <a href="/admin/instances">List instances</a>
+</p>
+
+<hr>
+<div class="row">
+    <div class="col-md-6">
+        <form method="post" action="/admin/instances/{{instance.clientId}}/assign">
+        <div class="form-group">
+            <label for="displayName">Company Name</label>
+            <input class="form-control" id="displayName" name="displayName" value="" required>
+        </div>
+        <div class="form-group">
+            <label for="displayName">Email (admin)</label>
+            <input class="form-control" id="adminEmail" name="adminEmail" value="" type="email" required>
+        </div>
+        <div class="form-group">
+            <label for="plan">Plan</label>
+            <select class="form-control" id="plan" name="plan" required>
+                <option {{#eq instance.plan "Pro"}}selected{{/eq}}>Pro</option>
+                <option {{#eq instance.plan "Enterprise"}}selected{{/eq}}>Enterprise</option>
+            </select>
+        </div>
+        <br />
+        <button type="submit" class="btn btn-primary">Assign</button>
+        </form>
+    </div>
+</div>

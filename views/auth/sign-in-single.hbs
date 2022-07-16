@@ -1,0 +1,13 @@
+{{#if msg}}
+    <div class="alert alert-warning" role="alert">
+        {{msg}}
+    </div>
+{{/if}}
+<meta http-equiv="refresh" content="1; url={{redirectTo}}" />
+<div class="d-flex justify-content-center">
+    <div class="alert alert-success shadow" role="alert">
+        Hurray, you are now logged in as {{user.email}}. <br />
+        You will soon be redirected to your <a href="{{redirectTo}}">Unleash-hosted instance</a>.
+    </div>
+</div>
+

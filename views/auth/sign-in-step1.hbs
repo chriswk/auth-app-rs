@@ -1,0 +1,43 @@
+{{#if msg}}
+    <div class="alert alert-warning" role="alert">
+        {{msg}}
+    </div>
+{{/if}}
+<div class="d-flex justify-content-center">
+    <div>
+    <div class="card border m-3 shadow">
+        <article class="card-body">
+            <h4 class="card-title mb-4 mt-1">Sign in</h4>
+            <p>
+                <a href="/auth/google/login" class="btn btn-outline-dark"> <i class="fab fa-google"></i>   Sign-in with Google</a>
+            </p>
+            <p class="fancy-line">or</p>
+            <form method="post" action="sign-in">
+                <div class="form-group">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"> <i class="fa fa-user"></i> </span>
+                        </div>
+                        <input name="email" class="form-control" placeholder="Email" type="email" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-block"> Next  </button>
+                        </div>
+                    </div>
+                    <!--
+                    <div class="col-md-6 text-right">
+                        <a class="small" href="forget">Forgot password?</a>
+                    </div>                                            
+                    -->
+                </div>                                                                 
+            </form>
+        </article>
+    </div>
+        <p>Don't have an account? <a href="https://www.getunleash.io/plans">Sign up</a></p>
+
+    </div>
+    
+</div>

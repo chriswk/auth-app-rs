@@ -26,7 +26,7 @@ pub struct CreateInstanceBody {
     pub stripe_customer_id: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Apiv2Schema, FromRow)]
+#[derive(Serialize, Deserialize, Apiv2Schema, FromRow, Debug)]
 pub struct InstanceRow {
     pub billing_center: String,
     pub client_id: String,

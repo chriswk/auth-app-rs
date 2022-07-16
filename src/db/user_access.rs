@@ -1,5 +1,6 @@
 use crate::errors::AuthAppError;
 use crate::model::user::Role;
+use log::warn;
 use sqlx::{Pool, Postgres};
 
 pub async fn add_access(
@@ -8,7 +9,7 @@ pub async fn add_access(
     email: String,
     role: Role,
 ) -> Result<(), AuthAppError> {
-    sqlx::query!(
+    let d = sqlx::query!(
         r#"
         INSERT INTO user_access(client_id, email, role) 
         VALUES ($1, $2, $3) 
@@ -20,6 +21,7 @@ pub async fn add_access(
     )
     .execute(conn)
     .await
-    .map_err(AuthAppError::SqlError)
-    .map(|_| ())
+    .map_err(AuthAppError::SqlError);
+    warn!("Managed to add access {:#?}", d);
+    Ok(())
 }

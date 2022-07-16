@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="stylesheet" href="https://cdn.getunleash.io/unleash/auth/bootstrap.min.css" crossorigin="anonymous">
+        <script src="https://cdn.getunleash.io/unleash/auth/jquery-3.3.1.slim.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.getunleash.io/unleash/auth/popper.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.getunleash.io/unleash/auth/bootstrap.min.js" crossorigin="anonymous"></script>
+        <script src="https://unpkg.com/@github/time-elements@3.1.2/dist/index.js" crossorigin="anonymous" type="module"></script>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
+        <link rel="icon" href="/favicon.ico">
+        <link rel="icon" href="/favicon-32-32.png" type="image/gif" sizes="32x32">
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"/>
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"/>
+        <title>
+            {{#if title}}
+                {{title}}
+            {{else}}
+                Unleash
+            {{/if}}
+        </title>
+        {{#if fullscreen}}
+        <style>
+            body {
+                background-color: #f5f5f5;
+                text-align: center;
+                padding-top: 20px;
+            }
+            .navbar {
+                display: none;
+            }
+        </style>
+        {{/if}}
+        <style>
+            .fancy-line {
+                display: flex;
+                width: 100%;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                color: gray;
+            }
+
+            .fancy-line:before,
+            .fancy-line:after {
+                content: '';
+                border-top: 1px solid silver;
+                margin: 0 20px 0 0;
+                flex: 1 0 20px;
+            }
+
+            .fancy-line:after {
+                margin: 0 0 0 20px;
+            }
+            tr.status-past-due td {
+                background-color: #dc3545!important;
+                color: white;
+            }
+        </style>
+    </head>
+    <body>
+
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="/images/Logo_DarkBlue_Transparent_Horizontal.svg" width="120" alt="Unleash-hosted.com">
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav mr-auto">
+                        {{#each menu}}
+                        <li class="nav-item {{active}}">
+                            <a class="nav-link" href="{{href}}">{{title}}</a>
+                        </li>
+                        {{/each}}
+                        {{#if isAdmin}}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/instances">Admin Instances</a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link" href="/admin/settings">Configure settings</a>
+                        </li>
+                        {{/if}}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        {{#if fullscreen}}
+            <img src="/images/Logo_DarkBlue_Transparent_Horizontal.svg" width="250" alt="getunleash.io" style="margin: 20px">
+        {{/if}}
+        <div class="container">
+            {{#if errors}}
+                <div class="alert alert-danger text-left">
+                    <strong>We got these errors:</strong>
+                    <ul>
+                        {{#each errors}}
+                            <li>{{this}}</li>
+                        {{/each}}
+                    </ul>
+                </div>
+            {{/if}}
+            {{{body}}}
+        </div>
+
+        <div class="container mt-5 text-center">
+            <span class="small">
+                Unleash <br />
+                contact@getunleash.io <br >
+                <br />
+                {{#if isAdmin}}
+                <a href="/sign-out">Sign out</a>
+                {{/if}}
+            </span>
+
+        </div>
+    </body>
+
+</html>

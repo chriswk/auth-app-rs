@@ -1,0 +1,19 @@
+<p>
+<h2>Edit setting</h2>
+<a href="/admin/settings">List settings</a>
+</p>
+
+<hr>
+<div class="row">
+  <div class="col-md-6">
+    <form method="post" action="/admin/settings/{{setting.name}}/edit">
+      <div class="form-group">
+        <label for="config">Configuration</label>
+        <textarea class="form-control" id="config" name="config">
+          {{setting.configAsString}}
+        </textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" onclick='validate()'>Save</button>
+    </form>
+  </div>
+</div>

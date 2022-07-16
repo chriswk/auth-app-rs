@@ -1,0 +1,63 @@
+<p>
+    <h2>Unleash-hosted Instances</h2>
+    <a href="/admin/instances/create">Create new instance</a> -
+    <a href="/admin/instances">All</a> -
+    <a href="/admin/instances?state=UNASSIGNED">Available</a>
+</p>
+<ul>
+  <li><a href='/admin/instances?state=UNASSIGNED'>Unassigned instances</a></li>
+  <li><a href='/admin/instances?state=TRIAL'>Instances in trial</a></li>
+  <li><a href='/admin/instances?state=ACTIVE'>Active instances</a></li>
+  <li><a href='/admin/instances?state=EXPIRED'>Expired instances</a></li>
+  <li><a href='/admin/instances?state=CHURNED'>Churned instances</a></li>
+</ul>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col">Client Id</th>
+      <th scope="col">Display Name</th>
+      <th scope="col">Status</th>
+      <th scope="col">Trial expiry</th>
+      <th scope="col">Plan</th>
+      <th scope="col">Seats</th>
+      <th scope="col" title="Stripe Customer Id">StripeCid</th>
+      <th scope="col" class="text-center">Region</th>
+      <th scope="col" class="text-right">Action</th>
+    </tr>
+  </thead>
+  <tbody>
+      {{#each instances}}
+        <tr>
+            <th scope="row"><a href="/admin/{{clientId}}">{{clientId}}</a></th>
+            <td>
+              {{#if (eq displayName '<free>')}}
+                <a href="/admin/instances/{{clientId}}/assign" title="Assign instance">{{displayName}}</a>
+              {{else}}
+                {{displayName}}
+              {{/if}}
+            </td>
+            <td>
+              {{#if (eq state 'UNASSIGNED')}}
+                  <a href="/admin/instances/{{clientId}}/assign" title="Assign instance">{{state}}</a>
+              {{else}}
+                {{state}}
+              {{/if}}
+            </td>
+            <td>
+                {{trialEnd}}
+            </td>
+            <td>{{plan}}</td>
+            <td>{{seats}}</td>
+            <td>
+              {{#if stripeCustomerId}}
+                <a href="/admin/{{clientId}}/invoices">{{stripeCustomerId}}</a>
+              {{/if}}
+            </td>
+            <td class="text-center">{{region}}</td>
+            <td class="text-right">
+                <a href="/admin/instances/{{clientId}}/edit" title="Edit"><i class="fa fa-edit"></i></a>&nbsp;
+                <a href="/admin/instances/{{clientId}}/delete" title="Delete"><i class="fa fa-trash"></i></a>
+            </td>
+        </tr>
+    {{/each}}
+</table>

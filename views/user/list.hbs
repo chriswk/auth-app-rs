@@ -1,0 +1,24 @@
+<p>
+    <h2>Unleash-hosted Users</h2>
+    <a href="/admin/users/create">Create new user</a>
+</p>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col">Email</th>
+      <th scope="col">Created</th>
+      <th scope="col">Action</th>
+    </tr>
+  </thead>
+  <tbody>
+      {{#each users}}
+        <tr>
+            <th scope="row">{{email}}</th>
+            <td>{{created}}</td>
+            <td>
+                <a href="/admin/usrs/{{email}}/edit"><i class="fa fa-edit"></i></a>&nbsp;
+                <a href="/admin/usrs/{{email}}/delete"><i class="fa fa-trash"></i></a>
+            </td>
+        </tr>
+    {{/each}}
+</table>

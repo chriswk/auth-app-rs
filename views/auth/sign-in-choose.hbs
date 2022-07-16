@@ -1,0 +1,19 @@
+<div class="d-flex justify-content-center">
+    <div class="card border m-3 shadow">
+        <article class="card-body">
+            <h4 class="card-title mb-4 mt-1">Sign in</h4>
+            <div class="text-left">
+            <p>
+                You (<code>{{email}}</code>) have access to multiple Unleash instances. 
+                <br /><br />
+                Please select the instance you want to continue with:
+            </p>
+
+            <ul>
+                {{#each urls}}
+                    <li><a href="{{url}}">{{clientId}}</a></li>
+                {{/each}}
+            </ul>
+        </article>
+    </div>
+</div>

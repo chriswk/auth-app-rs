@@ -35,7 +35,7 @@ pub fn validate_token(
             let email = token_value["email"].as_str();
             let client_ids = token_value["client_ids"]
                 .as_str()
-                .map(|ids| Vec::from_iter(ids.split(",").into_iter().map(|c| c.to_string())));
+                .map(|ids| Vec::from_iter(ids.split(',').into_iter().map(|c| c.to_string())));
 
             email
                 .zip(client_ids)
@@ -53,7 +53,7 @@ pub fn validate_token(
 
 #[cfg(test)]
 #[test]
-pub fn should_be_able_to_create_and_parse_token() {
+fn should_be_able_to_create_and_parse_token() {
     let config = AppConfig {
         secret: "abc123abc123abc123abc123abc12323".to_string(),
         ..Default::default()

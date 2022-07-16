@@ -1,18 +1,22 @@
-use crate::{service, AppState};
+use crate::{service, AppConfig, AppState};
+use actix_web::cookie::time::Duration;
 use actix_web::http::header;
 use actix_web::HttpResponse;
+use awc::cookie::{Cookie, SameSite};
+use log::warn;
 use oauth2::http::{HeaderMap, HeaderValue, Method};
 use oauth2::reqwest::http_client;
 use oauth2::url::Url;
 use oauth2::{
-    AccessToken, AuthorizationCode, AuthorizationRequest, CsrfToken, HttpRequest,
-    PkceCodeChallenge, PkceCodeVerifier, Scope, TokenResponse,
+    AccessToken, AuthorizationCode, CsrfToken, HttpRequest, PkceCodeChallenge, PkceCodeVerifier,
+    Scope, TokenResponse,
 };
 use paperclip::actix::web::ServiceConfig;
-use paperclip::actix::{api_v2_operation, get, post, web, Apiv2Schema, CreatedJson};
+use paperclip::actix::{api_v2_operation, web, Apiv2Schema};
 use std::collections::HashMap;
 use std::sync::Mutex;
 
+use crate::auth::token;
 use crate::errors::AuthAppError;
 use serde::{Deserialize, Serialize};
 use sqlx::{Pool, Postgres};
@@ -37,6 +41,8 @@ async fn login(
     let mut code_v = code_verifiers.lock().unwrap();
     let csrf = csrf_state.secret().to_string();
     let verifier = pkce_code_verifier.secret().to_string();
+    warn!("csrftoken: {:#?}", csrf);
+    warn!("Verifier: {:#?}", verifier);
 
     code_v.insert(csrf, verifier);
     HttpResponse::Found()
@@ -78,7 +84,7 @@ fn build_user_info_request(scope_url: Url, access_token: &AccessToken) -> HttpRe
 }
 
 fn get_auth_info(url: Url, access_token: &AccessToken) -> Result<AuthInfo, AuthAppError> {
-    let req = build_user_info_request(url.clone(), access_token);
+    let req = build_user_info_request(url, access_token);
     http_client(req)
         .map(|r| serde_json::from_slice(r.body.as_slice()).unwrap())
         .map_err(|_| AuthAppError::AccessNotAllowed)
@@ -88,17 +94,20 @@ fn get_auth_info(url: Url, access_token: &AccessToken) -> Result<AuthInfo, AuthA
 async fn callback(
     conn: web::Data<Pool<Postgres>>,
     data: web::Data<AppState>,
+    config: web::Data<AppConfig>,
     params: web::Query<AuthRequest>,
     code_verifiers: web::Data<Mutex<HashMap<String, String>>>,
-) -> HttpResponse {
+) -> Result<HttpResponse, AuthAppError> {
     let code = AuthorizationCode::new(params.code.clone());
     let state = CsrfToken::new(params.state.clone());
     let _scope = params.scope.clone();
     let cv = code_verifiers.lock().unwrap();
+    warn!("Getting {:#?}", state.secret());
     let verifier = cv.get(state.secret());
     match verifier {
         Some(v) => {
             let verifier = PkceCodeVerifier::new(v.to_string());
+
             let token = &data
                 .oauth
                 .exchange_code(code)
@@ -106,22 +115,40 @@ async fn callback(
                 .request(http_client);
             match token {
                 Ok(btr) => {
+                    warn!("Made token request {:#?}", btr);
                     let auth_info = get_auth_info(data.scope_url.clone(), btr.access_token());
                     match auth_info {
                         Ok(auth) => {
+                            warn!("Got authinfo: {:#?}", auth);
                             let auth_app_user =
-                                service::user::get_or_create_user(conn.as_ref(), auth.email).await;
+                                service::user::get_or_create_user(conn.as_ref(), auth.email)
+                                    .await?;
+                            let token = token::create_token(
+                                config.as_ref().clone(),
+                                auth_app_user.email,
+                                vec![],
+                            )?;
+                            let cookie_name = config.as_ref().clone().cookie_name;
+                            let session_cookie = Cookie::build(cookie_name, token)
+                                .max_age(Duration::seconds(config.cookie_life_time_secs))
+                                .domain(config.as_ref().clone().cookie_domain)
+                                .http_only(true)
+                                .same_site(SameSite::Strict)
+                                .finish();
+                            Ok(HttpResponse::Found()
+                                .cookie(session_cookie)
+                                .append_header((header::LOCATION, "/admin/instances"))
+                                .finish())
                         }
-                        Err(_) => (),
+                        Err(_) => Err(AuthAppError::AccessNotAllowed),
                     }
                 }
-                Err(e) => println!("You're a muppet Harry, {:#?}", e),
+                Err(_) => Err(AuthAppError::AccessNotAllowed),
             }
-            HttpResponse::Ok().finish()
         }
         None => {
             println!("Could not find {}", state.secret());
-            HttpResponse::Unauthorized().finish()
+            Err(AuthAppError::AccessNotAllowed)
         }
     }
 }

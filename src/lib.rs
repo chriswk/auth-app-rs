@@ -55,6 +55,15 @@ pub struct AppConfig {
 
     #[clap(long, env)]
     pub google_client_secret: String,
+
+    #[clap(long, short, env, default_value_t = String::from("auth_app_rs_auth"))]
+    pub cookie_name: String,
+
+    #[clap(long, short = 'l', env, default_value_t = 3600)]
+    pub cookie_life_time_secs: i64,
+
+    #[clap(long, env, default_value_t = String::from("localhost"))]
+    pub cookie_domain: String,
 }
 
 pub struct AppState {
@@ -67,7 +76,7 @@ fn validate_secret_length(secret: &str) -> Result<(), String> {
         Ok(())
     } else {
         Err(String::from(
-            "The secret must be exactly 32 characters long",
+            "The secret must be at least 32 characters long",
         ))
     }
 }

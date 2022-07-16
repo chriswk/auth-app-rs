@@ -1,0 +1,30 @@
+<p>
+    <h2 class="">Create user</h4>
+    <a href="/admin/users">List users</a>
+</p>
+
+<p class="text-danger">
+    {{ error.message }}
+</p>
+<hr>
+<form method="post" action="/admin/users/create">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"> <i class="fa fa-user"></i> </span>
+                    </div>
+                    <input name="email" class="form-control" placeholder="Email" type="email" required>
+                </div>
+            </div> 
+        </div>                                        
+    </div>   
+     <div class="row">
+        <div class="col-md-3">
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-block"> Create  </button>
+            </div>
+        </div>                                        
+    </div>                                          
+</form>
