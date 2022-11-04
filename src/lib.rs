@@ -71,15 +71,6 @@ pub struct AppState {
     pub scope_url: Url,
 }
 
-fn validate_secret_length(secret: &str) -> Result<(), String> {
-    if secret.len() == 32 {
-        Ok(())
-    } else {
-        Err(String::from(
-            "The secret must be at least 32 characters long",
-        ))
-    }
-}
 pub async fn migrate_db(pool: Pool<Postgres>) {
     sqlx::migrate!()
         .run(&pool)

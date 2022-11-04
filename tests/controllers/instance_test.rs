@@ -24,7 +24,7 @@ async fn can_add_instance() {
     );
     let url = format!(
         "postgres://tests:example@localhost:{}/authapp",
-        postgres.get_host_port(5432)
+        postgres.get_host_port_ipv4(5432)
     );
     let migration_pool = PgPoolOptions::new()
         .max_connections(1)
@@ -73,7 +73,7 @@ async fn can_list_added_instances() {
     );
     let url = format!(
         "postgres://tests:example@localhost:{}/authapp",
-        postgres.get_host_port(5432)
+        postgres.get_host_port_ipv4(5432)
     );
     let migration_pool = PgPoolOptions::new()
         .max_connections(1)
@@ -132,7 +132,7 @@ async fn adding_existing_client_id_yields_conflict() {
     );
     let url = format!(
         "postgres://tests:example@localhost:{}/authapp",
-        postgres.get_host_port(5432)
+        postgres.get_host_port_ipv4(5432)
     );
     let migration_pool = PgPoolOptions::new()
         .max_connections(1)
