@@ -96,6 +96,20 @@
     },
     "query": "\n        SELECT * FROM instances;\n    "
   },
+  "2de06d9a96ceb20214146a61d4603d49fabce9c47fc74818d35e605fafacfb2b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "\n        INSERT INTO user_access(client_id, email, role) \n        VALUES ($1, $2, $3) \n        ON CONFLICT (client_id, email) DO NOTHING;\n    "
+  },
   "39e60f986c3ece4b44ecc89f6c41af6eacb9ba767ea4e8ab9c50c6fc2f093d84": {
     "describe": {
       "columns": [
@@ -202,6 +216,157 @@
     },
     "query": "\n        INSERT INTO \n            instances(client_id, display_name, email_domain, instance_state, plan, region, seats, billing_center, trial_extended)\n        VALUES \n            ($1, $2, $3, $4, $5, $6, $7, $8, $9) \n        RETURNING *;\n    "
   },
+  "4759e7b94937e333b5e36c75165f0dc829c08ceef392e3cd099d26629674707a": {
+    "describe": {
+      "columns": [
+        {
+          "name": "email",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        true
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "SELECT email, name FROM auth_users WHERE email = $1"
+  },
+  "5ec885b0ae097fa6faa38413ca405807872665a2a8039ebf28ab4aa0a6a1e6c8": {
+    "describe": {
+      "columns": [
+        {
+          "name": "client_id",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "plan",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "display_name",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "created_at",
+          "ordinal": 3,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "stripe_customer_id",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "email_domain",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "region",
+          "ordinal": 6,
+          "type_info": "Text"
+        },
+        {
+          "name": "trial_expiry",
+          "ordinal": 7,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "trial_start",
+          "ordinal": 8,
+          "type_info": "Timestamptz"
+        },
+        {
+          "name": "instance_state",
+          "ordinal": 9,
+          "type_info": "Text"
+        },
+        {
+          "name": "trial_extended",
+          "ordinal": 10,
+          "type_info": "Int4"
+        },
+        {
+          "name": "billing_center",
+          "ordinal": 11,
+          "type_info": "Text"
+        },
+        {
+          "name": "seats",
+          "ordinal": 12,
+          "type_info": "Int4"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 13,
+          "type_info": "Timestamptz"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        true,
+        false,
+        true,
+        true,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n        SELECT * FROM instances WHERE email_domain = $1\n    "
+  },
+  "7e4ea2217f3f3bbd3cd2fc3c890bfdb82ace11f40a57a6e4b7137a68eaefe46b": {
+    "describe": {
+      "columns": [
+        {
+          "name": "email",
+          "ordinal": 0,
+          "type_info": "Text"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        true
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "\n        INSERT INTO auth_users(email, password_hash) VALUES ($1, $2) ON CONFLICT(email) DO NOTHING RETURNING email, name \n    "
+  },
   "96296e7d6f70c9f7e18e2942201e00ae403a7406795e516ae4573a69a24cab94": {
     "describe": {
       "columns": [
@@ -258,6 +423,47 @@
     },
     "query": "\n        SELECT \n         plan,\n         trial_expiry, \n         trial_start, \n         trial_extended,\n         instance_state, \n         billing_center, \n         region \n         FROM instances \n         WHERE client_id = $1;\n    "
   },
+  "cd8b940f34b996a8085a22f3bb64895921d1790577ed5c25cdd92cef34a0ed17": {
+    "describe": {
+      "columns": [
+        {
+          "name": "exists",
+          "ordinal": 0,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        null
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "\n        SELECT EXISTS (SELECT 1 FROM user_access WHERE client_id = $1 AND email = $2) AS exists;\n    "
+  },
+  "cf5bc61a716d79709ba19da2f5a6d74795ff798090cfb8379b75ffbf55605458": {
+    "describe": {
+      "columns": [
+        {
+          "name": "exists",
+          "ordinal": 0,
+          "type_info": "Bool"
+        }
+      ],
+      "nullable": [
+        null
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n        SELECT EXISTS (SELECT 1 FROM auth_users WHERE email = $1) AS exists\n    "
+  },
   "e868ee605390ae17774de2f63d80c69098b19832f65c70f89840fc14e360fa92": {
     "describe": {
       "columns": [
@@ -313,5 +519,18 @@
       }
     },
     "query": "\n        UPDATE instances SET trial_extended = trial_extended + 1,\n                trial_expiry = trial_expiry + INTERVAL '5 DAYS'\n                 WHERE client_id = $1 AND instance_state = 'Trial'\n        RETURNING plan, trial_expiry, trial_start, trial_extended, instance_state, billing_center, region \n    "
+  },
+  "febd21f083bd3b2d4cab33c595a6a1a2748e74c34969efdbef90cf6c8f97bccf": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "DELETE FROM user_access WHERE client_id = $1 AND email = $2"
   }
 }

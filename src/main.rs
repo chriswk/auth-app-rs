@@ -1,13 +1,9 @@
-use actix_session::storage::CookieSessionStore;
-use actix_session::SessionMiddleware;
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-use actix_web::cookie::Key;
 use actix_web::{middleware, App, HttpServer};
 use actix_web_prom::PrometheusMetricsBuilder;
 use clap::Parser;
-use handlebars::Handlebars;
 use middleware::NormalizePath;
 use oauth2::basic::BasicClient;
 use oauth2::url::Url;
@@ -22,7 +18,7 @@ use sqlx::postgres::PgPoolOptions;
 use auth_app_rs::version::get_version_info;
 use auth_app_rs::{controllers, AppConfig, AppState};
 
-#[actix_web::main]
+#[tokio::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("warn"));
@@ -61,11 +57,6 @@ async fn main() -> std::io::Result<()> {
         .await
         .expect("Couldn't connect to database");
 
-    let mut handlebars = Handlebars::new();
-    handlebars
-        .register_templates_directory(".hbs", "./views")
-        .unwrap();
-    let hb_ref = web::Data::new(handlebars);
     let auth_url = AuthUrl::new("https://accounts.google.com/o/oauth2/auth".to_string());
     let token_url = TokenUrl::new("https://oauth2.googleapis.com/token".to_string());
     let google_client_id = ClientId::new(init_config.google_client_id);
@@ -97,7 +88,6 @@ async fn main() -> std::io::Result<()> {
             });*/
         App::new()
             .wrap(NormalizePath::trim())
-            .app_data(web::Data::new(hb_ref.clone()))
             .app_data(web::Data::new(AppState {
                 oauth: oauth_client.clone(),
                 scope_url: Url::options()
@@ -117,7 +107,6 @@ async fn main() -> std::io::Result<()> {
                     .configure(controllers::internalbackstage::configure_internal_backstage),
             )
             .service(web::scope("/api").configure(controllers::api::configure_api))
-            .service(web::scope("/admin").configure(controllers::admin::configure_admin_web_page))
             .build()
     })
     .bind(("0.0.0.0", port_config.port))?

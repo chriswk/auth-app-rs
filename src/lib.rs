@@ -23,10 +23,10 @@ pub struct AppConfig {
     #[clap(short, long, default_value_t = String::from("development"))]
     pub run_mode: String,
 
-    #[clap(short, long, env, validator = validate_secret_length)]
+    #[clap(short, long, env)]
     pub secret: String,
 
-    #[clap(short = 'h', long)]
+    #[clap(long)]
     pub shared_secret: String,
 
     #[clap(long, env, default_value_t = String::from("eu-central-1"))]

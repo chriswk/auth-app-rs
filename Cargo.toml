@@ -5,41 +5,40 @@ version = "0.1.0"
 build = "build.rs"
 [dependencies]
 actix-service = "2.0.2"
-actix-session = { version = "0.7.0", features = ["cookie-session"] }
-actix-web = "4.1.0"
+actix-session = { version = "0.7.2", features = ["cookie-session"] }
+actix-web = "4.2.1"
 actix-web-grants = "3.0.1"
-actix-web-httpauth = "0.6.0"
+actix-web-httpauth = "0.8.0"
 actix-web-prom = "0.6.0"
-anyhow = { version = "1.0.58", features = ["std"] }
+anyhow = { version = "1.0.66", features = ["std"] }
 awc = "3.0.0"
-clap = { version = "3.2.12", features = ["derive", "env"] }
-chrono = { version = "0.4.19", features = ["serde"] }
+clap = { version = "4.0.19", features = ["derive", "env"] }
+chrono = { version = "0.4.22", features = ["serde"] }
 derive_more = "0.99.17"
 dotenv = "0.15.0"
-env_logger = "0.9.0"
-handlebars = { version = "4.3.2", features = ["dir_source", "walkdir"]}
+env_logger = "0.9.1"
 humantime = { version = "2.1.0" }
 humantime-serde = "1.1.1"
-itertools = "0.10.3"
+itertools = "0.10.5"
 log = "0.4.17"
-oauth2 = { version = "4.2.0", features = ["reqwest"] }
-paperclip = { version = "0.7.0", features = ["v3", "chrono", "actix4", "swagger-ui"] }
-paperclip-actix = "0.5.0"
-passwords = "3.1.9"
-prometheus = "0.13.1"
+oauth2 = { version = "4.2.3", features = ["reqwest"] }
+paperclip = { version = "0.7.1", features = ["v3", "chrono", "actix4", "swagger-ui"] }
+paperclip-actix = "0.5.1"
+passwords = "3.1.12"
+prometheus = "0.13.3"
 rust-argon2 = "1.0.0"
 rusty_paseto = { version = "0.4.0", features = ["batteries_included", "v4_local"]}
-serde = {version = "1.0.137", features = ["derive"]}
-serde_json = "1.0.81"
-shadow-rs = "0.13.1"
+serde = {version = "1.0.147", features = ["derive"]}
+serde_json = "1.0.87"
+shadow-rs = "0.17.1"
 strum = { version = "0.24.1", features = ["derive"]}
 strum_macros = { version = "0.24.2" }
-sqlx = { version = "0.6.0", features = ["runtime-actix-rustls", "postgres", "time", "json", "chrono", "offline"]}
-
+sqlx = { version = "0.6.2", features = ["runtime-actix-rustls", "postgres", "time", "json", "chrono", "offline"]}
+tokio = { version = "1.21.2", features = ["macros", "rt-multi-thread"] }
 [build-dependencies]
-shadow-rs = "0.13.1"
+shadow-rs = "0.17.1"
 
 [dev-dependencies]
-testcontainers = { version ="0.13.0"}
+testcontainers = { version ="0.14.0"}
 mockall = "0.11.1"
 
