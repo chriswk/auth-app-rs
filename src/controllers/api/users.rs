@@ -39,8 +39,8 @@ async fn remove_user(
             email: body.email.clone(),
         },
     )
-    .await
-    .map(Json)
+        .await
+        .map(Json)
 }
 
 #[api_v2_operation]
@@ -52,11 +52,11 @@ async fn sync_users(
     warn!("Entered sync operation");
     db::user::sync_users(
         conn.as_ref(),
-        client_id.client_id.clone(),
+        &client_id.client_id,
         body.emails.clone(),
     )
-    .await
-    .map(Json)
+        .await
+        .map(Json)
 }
 
 pub fn configure_users(cfg: &mut ServiceConfig) {

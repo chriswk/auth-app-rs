@@ -1,0 +1,58 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE instances SET trial_extended = trial_extended + 1,\n                trial_expiry = trial_expiry + INTERVAL '5 DAYS'\n                 WHERE client_id = $1 AND instance_state = 'Trial'\n        RETURNING plan, trial_expiry, trial_start, trial_extended, instance_state, billing_center, region \n    ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "plan",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "trial_expiry",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 2,
+        "name": "trial_start",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 3,
+        "name": "trial_extended",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "instance_state",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "billing_center",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "region",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "e868ee605390ae17774de2f63d80c69098b19832f65c70f89840fc14e360fa92"
+}

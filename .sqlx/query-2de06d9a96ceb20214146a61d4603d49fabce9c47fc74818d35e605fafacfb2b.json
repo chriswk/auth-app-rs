@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO user_access(client_id, email, role) \n        VALUES ($1, $2, $3) \n        ON CONFLICT (client_id, email) DO NOTHING;\n    ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "2de06d9a96ceb20214146a61d4603d49fabce9c47fc74818d35e605fafacfb2b"
+}

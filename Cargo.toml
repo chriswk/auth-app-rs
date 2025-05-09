@@ -1,44 +1,45 @@
 [package]
-edition = "2021"
+edition = "2024"
 name = "auth-app-rs"
 version = "0.1.0"
 build = "build.rs"
 [dependencies]
-actix-service = "2.0.2"
-actix-session = { version = "0.7.2", features = ["cookie-session"] }
-actix-web = "4.2.1"
-actix-web-grants = "3.0.1"
-actix-web-httpauth = "0.8.0"
-actix-web-prom = "0.6.0"
-anyhow = { version = "1.0.66", features = ["std"] }
-awc = "3.0.0"
-clap = { version = "4.0.19", features = ["derive", "env"] }
-chrono = { version = "0.4.22", features = ["serde"] }
-derive_more = "0.99.17"
+actix-service = "2.0.3"
+actix-session = { version = "0.10.1", features = ["cookie-session"] }
+actix-web = "4.10.2"
+actix-web-grants = "4.1.2"
+actix-web-httpauth = "0.8.2"
+actix-web-prom = "0.9.0"
+anyhow = { version = "1.0.98", features = ["std"] }
+awc = "3.6.0"
+clap = { version = "4.5.37", features = ["derive", "env"] }
+chrono = { version = "0.4.41", features = ["serde"] }
+derive_more = "2.0.1"
 dotenv = "0.15.0"
-env_logger = "0.9.1"
-humantime = { version = "2.1.0" }
+env_logger = "0.11.8"
+humantime = { version = "2.2.0" }
 humantime-serde = "1.1.1"
-itertools = "0.10.5"
-log = "0.4.17"
-oauth2 = { version = "4.2.3", features = ["reqwest"] }
-paperclip = { version = "0.7.1", features = ["v3", "chrono", "actix4", "swagger-ui"] }
-paperclip-actix = "0.5.1"
-passwords = "3.1.12"
-prometheus = "0.13.3"
-rust-argon2 = "1.0.0"
-rusty_paseto = { version = "0.4.0", features = ["batteries_included", "v4_local"]}
-serde = {version = "1.0.147", features = ["derive"]}
-serde_json = "1.0.87"
-shadow-rs = "0.17.1"
-strum = { version = "0.24.1", features = ["derive"]}
-strum_macros = { version = "0.24.2" }
-sqlx = { version = "0.6.2", features = ["runtime-actix-rustls", "postgres", "time", "json", "chrono", "offline"]}
-tokio = { version = "1.21.2", features = ["macros", "rt-multi-thread"] }
+itertools = "0.14.0"
+log = "0.4.27"
+oauth2 = { version = "5.0.0", features = ["reqwest"] }
+paperclip = { version = "0.9.5", features = ["v3", "chrono", "actix4", "swagger-ui"] }
+paperclip-actix = "0.7.3"
+passwords = "3.1.16"
+prometheus = "0.14.0"
+rust-argon2 = "2.1.0"
+rusty_paseto = { version = "0.7.2", features = ["batteries_included", "v4_local"] }
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+shadow-rs = "1.1.1"
+strum = { version = "0.27.1", features = ["derive"] }
+strum_macros = { version = "0.27.1" }
+sqlx = { version = "0.8.5", features = ["runtime-tokio-rustls", "postgres", "json", "chrono"] }
+tokio = { version = "1.45.0", features = ["macros", "rt-multi-thread"] }
+dashmap = "6.1.0"
 [build-dependencies]
-shadow-rs = "0.17.1"
+shadow-rs = "1.1.1"
 
 [dev-dependencies]
-testcontainers = { version ="0.14.0"}
-mockall = "0.11.1"
+testcontainers = { version = "0.24.0" }
+mockall = "0.13.1"
 

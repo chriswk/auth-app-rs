@@ -6,8 +6,9 @@ pub mod model;
 pub mod service;
 pub mod version;
 use clap::Parser;
-use oauth2::basic::BasicClient;
+use oauth2::basic::{BasicErrorResponse, BasicRevocationErrorResponse, BasicTokenIntrospectionResponse, BasicTokenResponse};
 use oauth2::url::Url;
+use oauth2::{Client, EndpointMaybeSet, EndpointNotSet, EndpointSet, StandardRevocableToken};
 use serde::Deserialize;
 use sqlx::{Pool, Postgres};
 
@@ -67,7 +68,7 @@ pub struct AppConfig {
 }
 
 pub struct AppState {
-    pub oauth: BasicClient,
+    pub oauth: Client<BasicErrorResponse, BasicTokenResponse, BasicTokenIntrospectionResponse, StandardRevocableToken, BasicRevocationErrorResponse, EndpointMaybeSet, EndpointNotSet, EndpointNotSet, EndpointSet, EndpointMaybeSet>,
     pub scope_url: Url,
 }
 

@@ -1,10 +1,10 @@
 use crate::errors::AuthAppError;
 use crate::model::user::{CreateUserBody, DeleteUserRequest, MinimalAuthUser};
 use passwords::PasswordGenerator;
-use sqlx::{Pool, Postgres};
+use sqlx::{PgPool, Pool, Postgres};
 
 fn generate_password() -> String {
-    let gen = PasswordGenerator {
+    let generator = PasswordGenerator {
         length: 32,
         numbers: true,
         lowercase_letters: true,
@@ -14,11 +14,11 @@ fn generate_password() -> String {
         strict: true,
         spaces: false,
     };
-    gen.generate_one().unwrap()
+    generator.generate_one().unwrap()
 }
 
 fn generate_passwords(number_to_generate: usize) -> Vec<String> {
-    let gen = PasswordGenerator {
+    let generator = PasswordGenerator {
         length: 32,
         numbers: true,
         lowercase_letters: true,
@@ -28,12 +28,12 @@ fn generate_passwords(number_to_generate: usize) -> Vec<String> {
         strict: true,
         spaces: false,
     };
-    gen.generate(number_to_generate).unwrap()
+    generator.generate(number_to_generate).unwrap()
 }
 
 pub async fn create_user(
-    conn: &Pool<Postgres>,
-    email: String,
+    conn: &PgPool,
+    email: &str,
 ) -> Result<MinimalAuthUser, AuthAppError> {
     sqlx::query_as!(
         MinimalAuthUser,
@@ -41,14 +41,14 @@ pub async fn create_user(
         INSERT INTO auth_users(email, password_hash) VALUES ($1, $2) ON CONFLICT(email) DO NOTHING RETURNING email, name 
     "#,
         email,
-        generate_password()
+        &generate_password()
     )
-    .fetch_one(conn)
-    .await
-    .map_err(AuthAppError::SqlError)
+        .fetch_one(conn)
+        .await
+        .map_err(AuthAppError::SqlError)
 }
 
-pub async fn user_exists(conn: &Pool<Postgres>, email: String) -> Result<bool, AuthAppError> {
+pub async fn user_exists(conn: &PgPool, email: &str) -> Result<bool, AuthAppError> {
     sqlx::query_as!(
         crate::model::Exists,
         r#"
@@ -56,16 +56,16 @@ pub async fn user_exists(conn: &Pool<Postgres>, email: String) -> Result<bool, A
     "#,
         email
     )
-    .fetch_one(conn)
-    .await
-    .map(|e| e.exists.unwrap_or(false))
-    .map_err(AuthAppError::SqlError)
+        .fetch_one(conn)
+        .await
+        .map(|e| e.exists.unwrap_or(false))
+        .map_err(AuthAppError::SqlError)
 }
 
 pub async fn user_access_exists(
-    conn: &Pool<Postgres>,
-    client_id: String,
-    email: String,
+    conn: &PgPool,
+    client_id: &str,
+    email: &str,
 ) -> Result<bool, AuthAppError> {
     sqlx::query_as!(
         crate::model::Exists,
@@ -75,10 +75,10 @@ pub async fn user_access_exists(
         client_id,
         email
     )
-    .fetch_one(conn)
-    .await
-    .map(|e| e.exists.unwrap_or(false))
-    .map_err(AuthAppError::SqlError)
+        .fetch_one(conn)
+        .await
+        .map(|e| e.exists.unwrap_or(false))
+        .map_err(AuthAppError::SqlError)
 }
 
 pub async fn create(
@@ -87,14 +87,14 @@ pub async fn create(
 ) -> Result<MinimalAuthUser, AuthAppError> {
     let user_already_has_access: bool = user_access_exists(
         conn,
-        create_request.client_id.clone(),
-        create_request.email.clone(),
+        &create_request.client_id,
+        &create_request.email,
     )
-    .await?;
+        .await?;
     match user_already_has_access {
         true => Err(AuthAppError::UserAlreadyHasAccess),
         false => {
-            let user = create_user(conn, create_request.email.clone()).await?;
+            let user = create_user(conn, &create_request.email).await?;
             let client_id = create_request.client_id.clone();
             let email = create_request.email.clone();
             let role = create_request.role.clone();
@@ -103,49 +103,49 @@ pub async fn create(
                 INSERT INTO user_access(client_id, email, role) VALUES ($1, $2, $3);
             "#,
             )
-            .bind(client_id)
-            .bind(email)
-            .bind(role)
-            .execute(conn)
-            .await
-            .map_err(AuthAppError::SqlError)?;
+                .bind(client_id)
+                .bind(email)
+                .bind(role)
+                .execute(conn)
+                .await
+                .map_err(AuthAppError::SqlError)?;
             Ok(user)
         }
     }
 }
 
 pub async fn delete(
-    conn: &Pool<Postgres>,
+    conn: &PgPool,
     delete_request: DeleteUserRequest,
 ) -> Result<(), AuthAppError> {
     sqlx::query!(
         "DELETE FROM user_access WHERE client_id = $1 AND email = $2",
-        delete_request.client_id.clone(),
-        delete_request.email.clone()
+        &delete_request.client_id,
+        &delete_request.email
     )
-    .execute(conn)
-    .await
-    .map_err(AuthAppError::SqlError)
-    .map(|_| ())
+        .execute(conn)
+        .await
+        .map_err(AuthAppError::SqlError)
+        .map(|_| ())
 }
 
 pub async fn get_user(
-    conn: &Pool<Postgres>,
-    email: String,
+    conn: &PgPool,
+    email: &str,
 ) -> Result<MinimalAuthUser, AuthAppError> {
     sqlx::query_as!(
         MinimalAuthUser,
         "SELECT email, name FROM auth_users WHERE email = $1",
         email
     )
-    .fetch_one(conn)
-    .await
-    .map_err(AuthAppError::SqlError)
+        .fetch_one(conn)
+        .await
+        .map_err(AuthAppError::SqlError)
 }
 
 pub async fn sync_users(
-    conn: &Pool<Postgres>,
-    client_id: String,
+    conn: &PgPool,
+    client_id: &str,
     emails: Vec<String>,
 ) -> Result<(), AuthAppError> {
     let client_ids = vec![client_id; emails.len()];
@@ -158,21 +158,21 @@ pub async fn sync_users(
             ON CONFLICT DO NOTHING;
     "#,
     )
-    .bind(&client_ids)
-    .bind(&passwords)
-    .execute(&mut tx)
-    .await
-    .map_err(AuthAppError::SqlError)?;
+        .bind(&client_ids)
+        .bind(&passwords)
+        .execute(&mut *tx)
+        .await
+        .map_err(AuthAppError::SqlError)?;
     sqlx::query(
         r#"
         INSERT INTO user_access(client_id, email, role)
         SELECT client_id, email, 'writer' FROM
         UNNEST($1, $2) AS a(client_id, email)"#,
     )
-    .bind(&client_ids)
-    .bind(&emails)
-    .execute(&mut tx)
-    .await
-    .map_err(|e| AuthAppError::SqlError(e))
-    .map(|_| ())
+        .bind(&client_ids)
+        .bind(&emails)
+        .execute(&mut *tx)
+        .await
+        .map_err(|e| AuthAppError::SqlError(e))
+        .map(|_| ())
 }

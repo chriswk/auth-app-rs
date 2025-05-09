@@ -1,19 +1,19 @@
-use std::collections::HashMap;
-use std::sync::Mutex;
-
 use actix_web::{middleware, App, HttpServer};
 use actix_web_prom::PrometheusMetricsBuilder;
 use clap::Parser;
+use dashmap::DashMap;
 use middleware::NormalizePath;
-use oauth2::basic::BasicClient;
+use oauth2::basic::{BasicClient, BasicErrorResponse, BasicRevocationErrorResponse, BasicTokenIntrospectionResponse, BasicTokenResponse};
 use oauth2::url::Url;
-use oauth2::{AuthUrl, ClientId, ClientSecret, RedirectUrl, TokenUrl};
+use oauth2::{AuthUrl, Client, ClientId, ClientSecret, EndpointMaybeSet, EndpointNotSet, EndpointSet, RedirectUrl, RevocationUrl, StandardRevocableToken, TokenUrl};
 use paperclip::actix::{
     web::{self},
     OpenApiExt,
 };
 use paperclip::v2::models::{DefaultApiRaw, Info, Tag};
 use sqlx::postgres::PgPoolOptions;
+use std::collections::HashMap;
+use std::sync::Arc;
 
 use auth_app_rs::version::get_version_info;
 use auth_app_rs::{controllers, AppConfig, AppState};
@@ -57,21 +57,23 @@ async fn main() -> std::io::Result<()> {
         .await
         .expect("Couldn't connect to database");
 
-    let auth_url = AuthUrl::new("https://accounts.google.com/o/oauth2/auth".to_string());
-    let token_url = TokenUrl::new("https://oauth2.googleapis.com/token".to_string());
+    let auth_url = AuthUrl::new("https://accounts.google.com/o/oauth2/v2/auth".to_string());
+    let token_url = TokenUrl::new("https://www.googleapis.com/oauth2/v3/token".to_string());
     let google_client_id = ClientId::new(init_config.google_client_id);
     let google_client_secret = ClientSecret::new(init_config.google_client_secret);
-    let oauth_client = BasicClient::new(
-        google_client_id.clone(),
-        Some(google_client_secret),
-        auth_url.unwrap(),
-        token_url.ok(),
-    )
-    .set_redirect_uri(
-        RedirectUrl::new("http://localhost:1500/api/auth/google/callback".to_string())
-            .expect("Your redirect URL is bullshit"),
+    let oauth_client: Client<BasicErrorResponse, BasicTokenResponse, BasicTokenIntrospectionResponse, StandardRevocableToken, BasicRevocationErrorResponse, EndpointMaybeSet, EndpointNotSet, EndpointNotSet, EndpointSet, EndpointMaybeSet> = BasicClient::new(
+        google_client_id.clone())
+        .set_client_secret(google_client_secret)
+        .set_auth_uri_option(auth_url.ok())
+        .set_token_uri_option(token_url.ok())
+        .set_redirect_uri(
+            RedirectUrl::new("http://localhost:1500/api/auth/google/callback".to_string())
+                .expect("Your redirect URL is bullshit"),
+        ).set_revocation_url(
+        RevocationUrl::new("https://oauth2.googleapis.com/revoke".to_string())
+            .expect("Invalid revocation endpoint URL"),
     );
-    let code_verifiers: HashMap<String, String> = HashMap::new();
+    let code_verifiers: Arc<DashMap<String, String>> = Arc::new(DashMap::default());
 
     HttpServer::new(move || {
         /*        let shared_config = app_config.clone();
@@ -91,12 +93,12 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(AppState {
                 oauth: oauth_client.clone(),
                 scope_url: Url::options()
-                    .parse("https://www.googleapis.com/oauth2/v3/userinfo")
+                    .parse("https://www.googleapis.com/auth/userinfo.email")
                     .expect("Your constants are constantly wrong"),
             }))
             .app_data(web::Data::new(app_config.clone()))
             .app_data(web::Data::new(pool.clone()))
-            .app_data(web::Data::new(Mutex::new(code_verifiers.clone())))
+            .app_data(web::Data::from(code_verifiers.clone()))
             .wrap_api_with_spec(spec.clone())
             .with_json_spec_at("/api/spec/v2")
             .with_json_spec_v3_at("/api/spec/v3")
@@ -109,7 +111,7 @@ async fn main() -> std::io::Result<()> {
             .service(web::scope("/api").configure(controllers::api::configure_api))
             .build()
     })
-    .bind(("0.0.0.0", port_config.port))?
-    .run()
-    .await
+        .bind(("0.0.0.0", port_config.port))?
+        .run()
+        .await
 }

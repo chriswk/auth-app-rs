@@ -1,0 +1,108 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO \n            instances(client_id, display_name, email_domain, instance_state, plan, region, seats, billing_center, trial_extended)\n        VALUES \n            ($1, $2, $3, $4, $5, $6, $7, $8, $9) \n        RETURNING *;\n    ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "client_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "plan",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "display_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 4,
+        "name": "stripe_customer_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "email_domain",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "region",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "trial_expiry",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 8,
+        "name": "trial_start",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "instance_state",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 10,
+        "name": "trial_extended",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 11,
+        "name": "billing_center",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 12,
+        "name": "seats",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 13,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Int4",
+        "Text",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      true,
+      true,
+      false,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "39e60f986c3ece4b44ecc89f6c41af6eacb9ba767ea4e8ab9c50c6fc2f093d84"
+}

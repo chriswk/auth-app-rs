@@ -1,0 +1,58 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT \n         plan,\n         trial_expiry, \n         trial_start, \n         trial_extended,\n         instance_state, \n         billing_center, \n         region \n         FROM instances \n         WHERE client_id = $1;\n    ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "plan",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "trial_expiry",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 2,
+        "name": "trial_start",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 3,
+        "name": "trial_extended",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "instance_state",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "billing_center",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "region",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "96296e7d6f70c9f7e18e2942201e00ae403a7406795e516ae4573a69a24cab94"
+}

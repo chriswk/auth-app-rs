@@ -1,12 +1,12 @@
 use crate::errors::AuthAppError;
 use crate::model::user::Role;
 use log::warn;
-use sqlx::{Pool, Postgres};
+use sqlx::PgPool;
 
 pub async fn add_access(
-    conn: &Pool<Postgres>,
-    client_id: String,
-    email: String,
+    conn: &PgPool,
+    client_id: &str,
+    email: &str,
     role: Role,
 ) -> Result<(), AuthAppError> {
     let d = sqlx::query!(
@@ -17,11 +17,11 @@ pub async fn add_access(
     "#,
         client_id,
         email,
-        role.to_string()
+        &role.to_string()
     )
-    .execute(conn)
-    .await
-    .map_err(AuthAppError::SqlError);
+        .execute(conn)
+        .await
+        .map_err(AuthAppError::SqlError);
     warn!("Managed to add access {:#?}", d);
     Ok(())
 }

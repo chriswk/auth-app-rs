@@ -1,0 +1,98 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT * FROM instances;\n    ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "client_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "plan",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "display_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 4,
+        "name": "stripe_customer_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "email_domain",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "region",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "trial_expiry",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 8,
+        "name": "trial_start",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "instance_state",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 10,
+        "name": "trial_extended",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 11,
+        "name": "billing_center",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 12,
+        "name": "seats",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 13,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      true,
+      true,
+      false,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "0e805cf1a5753cf3e2c75a055304e338732154bfa7185749666fd45f5eb9132a"
+}
